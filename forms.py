@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SingleTagWidget(s2forms.ModelSelect2TagWidget):
+class SingleTagWidget(s2forms.Select2Mixin, s2forms.Select2TagMixin, s2forms.forms.Select):
     queryset = None
     search_fields = [
         'name__icontains',
@@ -22,19 +22,19 @@ class SingleTagWidget(s2forms.ModelSelect2TagWidget):
         """
 
         cleaned_items = []
-        for value in set(super().value_from_datadict(data, files, name)):
-            # Values are either a number for a matched ID, or a string of user input.
-            try:
-                pk = int(value)
-                return value
-                #cleaned_items.append(value)
-            except ValueError:
-                if self.queryset.filter(name__iexact=value).count():
-                    pk = self.queryset.get(name__iexact=value).pk
-                else:
-                    pk = self.queryset.create(name=value).pk
-                #cleaned_items.append(pk)
-                return pk
+        value = super().value_from_datadict(data, files, name)
+        # Values are either a number for a matched ID, or a string of user input.
+        try:
+            pk = int(value)
+            return value
+            #cleaned_items.append(value)
+        except ValueError:
+            if self.queryset.filter(name__iexact=value).count():
+                pk = self.queryset.get(name__iexact=value).pk
+            else:
+                pk = self.queryset.create(name=value).pk
+            #cleaned_items.append(pk)
+            return pk
 
 
 class ProductTagWidget(SingleTagWidget):
@@ -43,10 +43,6 @@ class ProductTagWidget(SingleTagWidget):
 
 class CategoryTagWidget(SingleTagWidget):
     queryset = Category.objects.all()
-
-
-class NewSingleTagWidget(s2forms.Select2Mixin, s2forms.Select2TagMixin, s2forms.forms.Select):
-    pass
 
 
 class ProductForm(forms.ModelForm):
@@ -73,7 +69,7 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = ['name', 'category', 'pluralised_name']
         widgets = {
-            'category': NewSingleTagWidget,
+            'category': SingleTagWidget,
         }
         help_texts = {'category': ''}  # Remove category addition help
 
