@@ -1,0 +1,29 @@
+{% extends "shopping_list/base_generic.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+<title>Recipes</title>
+{% endblock %}
+
+{% block content %}
+
+<h2>Add a new recipe</h2>
+{% crispy form %}
+<hr>
+<h1>Recipe List</h1>
+{% if recipe_list %}
+<ul>
+  {% for recipe in recipe_list %}
+  <li>
+    <a href="{{ recipe.get_absolute_url }}">{{ recipe.name }}</a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>There are no recipes available.</p>
+{% endif %}
+{% endblock %}
+
+{% block javascript %}
+{{ form.media }}
+{% endblock %}

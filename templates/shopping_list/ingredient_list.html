@@ -1,0 +1,34 @@
+{% comment %}
+This template places a vertical list of buttons, each representing an ingredient.
+This common functionality may be used in the shopping list/index view, the auto-shopping view, and the recipe detail view.
+It also includes a small form at the top which
+{% endcomment %}
+
+{% load static %}
+{% load shopping_list_units %}
+
+<form method="post" action={{ remove_item_url }} id="ingredient-list">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.path }}">
+    {% regroup ingredient_list by product.category.name as ingredient_list_by_category %}
+    {% for category in ingredient_list_by_category %}
+      <br>
+      <ul style="list-style-type: none">
+      {% regroup category.list|dictsort:"product.name" by product.name as category_list_by_ingredient %}
+      {% for ingredient in category_list_by_ingredient %}
+        <li>
+            <input type="hidden" id="hidden-ingredient-id-{{ ingredient.list.0.id }}" name="ingredient-id-{{ ingredient.list.0.id }}" value="keep">
+            <button type="button" class="btn btn-primary" id="button-ingredient-id-{{ ingredient.list.0.id }}" style="width: 20%;" onclick="manageStrikethrough(this);">
+              {{ ingredient.list|shopping_list_units }}
+              {{ ingredient.grouper }}
+            </button>
+        </li>
+      {% endfor %}
+      </ul>
+    {% endfor %}
+    <br>
+    <hr>
+    <button class="btn btn-success col-auto" type="submit" form="ingredient-list">Save</button>
+</form>
+
+<script src="{% static 'js/strikethrough_toggle.js' %}"></script>

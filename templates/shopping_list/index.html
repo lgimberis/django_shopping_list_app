@@ -1,0 +1,27 @@
+{% extends "shopping_list/base_generic.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Shopping</h1>
+    <hr>
+    {% crispy form %}
+
+    <hr>
+    {% if ingredient_list %}
+      {% include "shopping_list/ingredient_list.html" %}
+    {% else %}
+      <h2>Shopping list is empty!</h2>
+      <hr>
+    {% endif %}
+    <br>
+    <div class="row">
+      <form class="col-auto" method="post" action="{% url 'index-refill' %}" onclick="return confirm('Are you sure? This will fill the shopping list with items in the auto-shopping list')">
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit">Refill</button>
+      </form>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+{{ form.media }}
+{% endblock %}
