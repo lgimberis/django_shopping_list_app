@@ -79,8 +79,8 @@
             </div>
         
             {% else %}
-            {# For unauthenticated users #}
-            <h2>You must be logged in to view this. <a href="{% url 'login' %}?next={{request.path}}">Click here to log in.</a></h2>
+                {# For unauthenticated users #}
+                <h2>You must be logged in to view this. <a href="{% url 'login' %}?next={{request.path}}">Click here to log in.</a></h2>
             {% endif %}
         </div>
     {% endblock %}

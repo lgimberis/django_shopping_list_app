@@ -11,17 +11,15 @@
 {% crispy form %}
 <hr>
 <h1>Recipe List</h1>
-{% if recipe_list %}
 <ul>
   {% for recipe in recipe_list %}
-  <li>
-    <a href="{{ recipe.get_absolute_url }}">{{ recipe.name }}</a>
-  </li>
+    <li>
+      <a href="{{ recipe.get_absolute_url }}">{{ recipe.name }}</a>
+    </li>
+  {% empty %}
+    <li>There are no recipes available.</li>
   {% endfor %}
 </ul>
-{% else %}
-<p>There are no recipes available.</p>
-{% endif %}
 {% endblock %}
 
 {% block javascript %}
