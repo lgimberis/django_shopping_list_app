@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views import generic
 from django.urls import reverse
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 from ..models import Product
@@ -24,10 +25,14 @@ def product_create(request):
     if request.method == "POST":
         form = ProductForm(request.POST)
         if form.is_valid():
-            product = form.save(commit=False)
-            if not product.pluralised_name:
-                product.pluralised_name = product.name
-            product.save()
+            try:
+                product = Product.objects.get(name__iexact=form.cleaned_data['name'])
+                messages.add_message(request, messages.ERROR, f"{product.name} already exists!")
+            except Product.DoesNotExist:
+                product = form.save(commit=False)
+                if not product.pluralised_name:
+                    product.pluralised_name = product.name
+                product.save()
     # Whether successful or not, because products are things you make once and then forget,
     # creating them should return to the product list.
     return HttpResponseRedirect(reverse('products'))
