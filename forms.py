@@ -32,13 +32,22 @@ class SingleTagWidget(s2forms.Select2Mixin, s2forms.Select2TagMixin, s2forms.for
             if self.queryset.filter(name__iexact=value).count():
                 pk = self.queryset.get(name__iexact=value).pk
             else:
-                pk = self.queryset.create(name=value).pk
+                pk = self.create_and_get_instance(value).pk
             #cleaned_items.append(pk)
             return pk
+
+    def create_and_get_instance(self, value):
+        return self.queryset.create(name=value)
 
 
 class ProductTagWidget(SingleTagWidget):
     queryset = Product.objects.all()
+
+    def create_and_get_instance(self, value):
+        product = super().create_and_get_instance(value)
+        product.pluralised_name = product.name
+        product.save()
+        return product
 
 
 class CategoryTagWidget(SingleTagWidget):
