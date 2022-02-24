@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Lower
 from django.urls import reverse
 from django.contrib.auth.models import User
 
@@ -73,7 +74,7 @@ class Recipe(models.Model):
     def get_ingredient_list(self):
         """Returns ingredients of this Recipe, ordered by category name.
         """
-        return self.ingredient_set.filter(on_shopping_list=False).order_by('product__category__name')
+        return self.ingredient_set.filter(on_shopping_list=False).order_by(Lower('product__category__name'), Lower('product__name'))
 
     def get_remove_url(self):
         """Returns the relevant url to the view that will remove items from this recipe.

@@ -3,6 +3,7 @@ import itertools
 import logging
 import re
 
+from django.db.models.functions import Lower
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.views import generic
@@ -27,7 +28,7 @@ def index(request):
 
     form = add_ingredient_from_form(request, on_shopping_list=True, recipe=None)
     context = {
-        "ingredient_list": Ingredient.objects.filter(on_shopping_list=True).order_by('product__category__name'),
+        "ingredient_list": Ingredient.objects.filter(on_shopping_list=True).order_by(Lower('product__category__name'), Lower('product__name')),
         "form": form,
         "remove_item_url": reverse('remove-from-shopping-list'),
     }

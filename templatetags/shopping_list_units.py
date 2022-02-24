@@ -23,4 +23,8 @@ def shopping_list_units(ingredient_list):
         final_amount = f"{final_amount}+{addition}"
     else:
         final_amount = addition
-    return final_amount.strip()
+    product = ingredient_list[0].product
+    if final_amount == "1" or not product.pluralised_name:
+        return f"{final_amount} {product.name}"
+    else:
+        return f"{final_amount} {product.pluralised_name}"

@@ -14,13 +14,12 @@ It also includes a small form at the top which
     {% for category in ingredient_list_by_category %}
       <br>
       <ul style="list-style-type: none">
-      {% regroup category.list|dictsort:"product.name" by product.name as category_list_by_ingredient %}
+      {% regroup category.list by product.name as category_list_by_ingredient %}
       {% for ingredient in category_list_by_ingredient %}
         <li>
             <input type="hidden" id="hidden-ingredient-id-{{ ingredient.list.0.id }}" name="ingredient-id-{{ ingredient.list.0.id }}" value="keep">
             <button type="button" class="btn btn-primary" id="button-ingredient-id-{{ ingredient.list.0.id }}" style="width: 20%;" onclick="manageStrikethrough(this);">
               {{ ingredient.list|shopping_list_units }}
-              {{ ingredient.grouper }}
             </button>
         </li>
       {% endfor %}
