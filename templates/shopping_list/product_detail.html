@@ -26,14 +26,14 @@
   <hr>
 
   {% if product.number_of_relevant_recipes %}
-  <h2>Used in {{ product.number_of_relevant_recipes }} recipe {{ product.number_of_dsrelevant_recipes | pluralize:",s" }}:</h2>
-  <ul>
-      {% for recipe in product.relevant_recipes %}
-      <li><a href="{{ recipe.get_absolute_url }}">{{ recipe.name }}</a></li>
-      {% endfor %}
-  </ul>
+    <h2>Used in {{ product.number_of_relevant_recipes }} recipe{{ product.number_of_relevant_recipes | pluralize:",s" }}:</h2>
+    <ul>
+        {% for recipe in product.relevant_recipes %}
+        <li><a href="{{ recipe.get_absolute_url }}">{{ recipe.name }}</a></li>
+        {% endfor %}
+    </ul>
   {% else %}
-  <h2>Not used in any recipes.</h2>
+    <h2>Not used in any recipes.</h2>
   {% endif %}
 
   <hr>
