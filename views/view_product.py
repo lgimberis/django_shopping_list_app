@@ -1,3 +1,4 @@
+from django.db.models.functions import Lower
 from django.shortcuts import render
 from django.views import generic
 from django.urls import reverse
@@ -78,7 +79,7 @@ class ProductListView(generic.ListView):
     paginate_by = 100
 
     def get_queryset(self):
-        return Product.objects.all().order_by('category__name')
+        return Product.objects.all().order_by(Lower('category__name'), Lower('name'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
