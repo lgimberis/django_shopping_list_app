@@ -17,23 +17,25 @@ class SingleTagWidget(s2forms.Select2Mixin, s2forms.Select2TagMixin, s2forms.for
         'name__icontains',
     ]
 
+    def __init__(self, *args, **kwargs):
+        if not self.queryset:
+            raise Exception('self.queryset must be set')
+        super().__init__(*args, **kwargs)
+
     def value_from_datadict(self, data, files, name):
         """Create objects for given non-pimary-key values. Return list of all primary keys.
         """
 
-        cleaned_items = []
         value = super().value_from_datadict(data, files, name)
         # Values are either a number for a matched ID, or a string of user input.
         try:
             pk = int(value)
             return value
-            #cleaned_items.append(value)
         except ValueError:
             if self.queryset.filter(name__iexact=value).count():
                 pk = self.queryset.get(name__iexact=value).pk
             else:
                 pk = self.create_and_get_instance(value).pk
-            #cleaned_items.append(pk)
             return pk
 
     def create_and_get_instance(self, value):
@@ -60,6 +62,7 @@ class ProductForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['pluralised_name'].label = "Plural Product Name (if different)"
+        self.fields['category'].required = True
         self.helper = FormHelper()
         self.helper.form_class = 'row row-cols-lg-4'
         self.helper.label_class = 'col'
@@ -78,7 +81,7 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = ['name', 'category', 'pluralised_name']
         widgets = {
-            'category': SingleTagWidget,
+            'category': CategoryTagWidget,
         }
         help_texts = {'category': ''}  # Remove category addition help
 
