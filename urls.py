@@ -16,6 +16,7 @@ urlpatterns = [
     path('products/', views.ProductListView.as_view(), name='products'),  # Complete list of products
     path('products/<str:product_name>', views.product_detail_view, name='product-detail'),
     path('product-create', views.product_create, name='product-create'),
+    path('product-delete/<int:pk>', views.product_delete, name='product-delete'),
     path('users/', views.users, name='users'),  # Complete list of users
     path('automatic-shopping/', views.auto_shopping, name='auto'),  # Complete specification for auto-shopping
     path('remove-from-shopping-list/', views.remove_from_shopping_list, name='remove-from-shopping-list'),

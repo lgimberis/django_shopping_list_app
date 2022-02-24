@@ -10,10 +10,10 @@ from ..util import match_name
 
 
 @login_required
-def product_delete(request):
+def product_delete(request, pk):
     if request.method == "POST":
         try:
-            Product.objects.get(pk=request.POST['product-delete-id']).delete()
+            Product.objects.get(pk=pk).delete()
         except Product.DoesNotExist:
             pass
     return HttpResponseRedirect(reverse('products'))
@@ -24,7 +24,10 @@ def product_create(request):
     if request.method == "POST":
         form = ProductForm(request.POST)
         if form.is_valid():
-            form.save()
+            product = form.save(commit=False)
+            if not product.pluralised_name:
+                product.pluralised_name = product.name
+            product.save()
     # Whether successful or not, because products are things you make once and then forget,
     # creating them should return to the product list.
     return HttpResponseRedirect(reverse('products'))
@@ -42,12 +45,12 @@ def product_detail_view(request, product_name):
             bound_form = ProductForm(request.POST)
 
             if bound_form.is_valid():
-                for key in ["name", "category"]:
+                for key in ["name", "category", "pluralised_name"]:
                     setattr(closest_model, key, bound_form.cleaned_data[key])
                 closest_model.save()
         else:
             # Create default form
-            bound_form = ProductForm(initial={key: getattr(closest_model, key) for key in ["name", "category"]})
+            bound_form = ProductForm(initial={key: getattr(closest_model, key) for key in ["name", "category", "pluralised_name"]})
 
         context = {
             "form": bound_form,
