@@ -25,7 +25,7 @@
                 {% block sidebar %}
                     <small>Logged in as {{ user.get_username }}.</small></p>
                     <ul class="sidebar-nav">
-                        <li><a href="{% url 'index' %}">Shopping</a></li>
+                        <li><a href="{% url 'shopping-index' %}">Shopping</a></li>
                         <li><a href="{% url 'auto' %}">Auto-shopping</a></li>
                         <li><a href="{% url 'recipes' %}">Recipes</a></li>
                         <li><a href="{% url 'products' %}">Products</a></li>

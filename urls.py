@@ -4,7 +4,7 @@ from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', views.index, name='shopping-index'),
     path('index-refill', views.index_refill, name='index-refill'),
     path('recipes/', views.RecipeListView.as_view(), name='recipes'),  # Overview of recipes
     path('my_recipes/', views.UserRecipeListView.as_view(), name='user-recipes'),  # User's recipes

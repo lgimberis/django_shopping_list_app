@@ -109,7 +109,7 @@ def recipe_to_shopping_list(request, pk):
                 list_ingredient.recipe = recipe
                 list_ingredient.added_by = request.user
                 list_ingredient.save()
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("shopping-index"))
         except Recipe.DoesNotExist:
             logger.error(f"Recipe with id {pk} not found")
 
@@ -146,4 +146,3 @@ class UserRecipeListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Recipe.objects.filter(added_by=self.request.user)
-

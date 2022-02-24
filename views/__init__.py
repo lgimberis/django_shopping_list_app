@@ -46,7 +46,7 @@ def index_refill(request):
             new_ingredient.recipe = None
             new_ingredient.on_shopping_list = True
             new_ingredient.save()
-    return HttpResponseRedirect(reverse('index'))
+    return HttpResponseRedirect(reverse('shopping-index'))
 
 
 def remove_from_shopping_list(request):
