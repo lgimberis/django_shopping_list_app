@@ -30,7 +30,7 @@
                         <li><a href="{% url 'recipes' %}">Recipes</a></li>
                         <li><a href="{% url 'products' %}">Products</a></li>
                         <li><a href="{% url 'users' %}">Users</a></li>
-                        <li><a href="{% url 'logout' %}">Log out</a></li>
+                        <li><a href="{% url 'account_logout' %}">Log out</a></li>
                     </ul>
                 {% endblock %}
             </div>
@@ -80,7 +80,7 @@
         
             {% else %}
                 {# For unauthenticated users #}
-                <h2>You must be logged in to view this. <a href="{% url 'login' %}?next={{request.path}}">Click here to log in.</a></h2>
+                <h2>You must be logged in to view this. <a href="{% url 'account_login' %}?next={{request.path}}">Click here to log in.</a></h2>
             {% endif %}
         </div>
     {% endblock %}
