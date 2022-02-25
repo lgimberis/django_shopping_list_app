@@ -1,3 +1,10 @@
+from functools import wraps
+
+from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from fuzzywuzzy import fuzz, process
 
 from .models import Ingredient
@@ -33,4 +40,22 @@ def add_ingredient_from_form(request, on_shopping_list=False, recipe=None):
     return form
 
 def get_shopping_list_group(user):
-    return user.groups_set.filter(name__icontains="shopping_list_family")
+    """Get the 'Shopping List Group' of the user.
+    
+    Models can only be seen, modified, and deleted if they belong to the user's group.
+    """
+    try:
+        return user.groups.get(name__icontains="shopping_list_family")
+    except Group.DoesNotExist:
+        return None
+
+def group_required(function):
+    @wraps(function)
+    def wrapper(request, *args, **kwargs):
+        group = get_shopping_list_group(request.user)
+        if group:
+            return login_required(function(request, group, *args, **kwargs))
+        else:
+            messages.info(request, "To access the shopping list app, you must either create or join a group.")
+            return HttpResponseRedirect(reverse('manage'))
+    return wrapper

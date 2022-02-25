@@ -1,10 +1,13 @@
 from django import forms
-from .models import Product, Category, Ingredient, Recipe
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Field, ButtonHolder
 from django_select2 import forms as s2forms
+
+from .util import get_shopping_list_group
+from .models import Product, Category, Ingredient, Recipe
+
 
 import logging
 
@@ -32,8 +35,8 @@ class SingleTagWidget(s2forms.Select2Mixin, s2forms.Select2TagMixin, s2forms.for
             pk = int(value)
             return value
         except ValueError:
-            if self.queryset.filter(name__iexact=value).count():
-                pk = self.queryset.get(name__iexact=value).pk
+            if self.get_queryset().filter(name__iexact=value).count():
+                pk = self.get_queryset().get(name__iexact=value).pk
             else:
                 pk = self.create_and_get_instance(value).pk
             return pk
@@ -45,9 +48,13 @@ class SingleTagWidget(s2forms.Select2Mixin, s2forms.Select2TagMixin, s2forms.for
 class ProductTagWidget(SingleTagWidget):
     queryset = Product.objects.all()
 
+    def get_queryset(self):
+        return Product.objects.filter(group=get_shopping_list_group(self.request.user))
+
     def create_and_get_instance(self, value):
         product = super().create_and_get_instance(value)
         product.pluralised_name = product.name
+        product.group = get_shopping_list_group(self.request.user)
         product.save()
         return product
 
@@ -55,6 +62,14 @@ class ProductTagWidget(SingleTagWidget):
 class CategoryTagWidget(SingleTagWidget):
     queryset = Category.objects.all()
 
+    def get_queryset(self):
+        return Category.objects.filter(group=get_shopping_list_group(self.request.user))
+
+    def create_and_get_instance(self, value):
+        category = super().create_and_get_instance(value)
+        category.group = get_shopping_list_group(self.request.user)
+        category.save()
+        return category
 
 class ProductForm(forms.ModelForm):
     """Product creation form.

@@ -6,23 +6,23 @@ from django.contrib import messages
 from django.db.models.functions import Lower
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.views.generic import ListView
 
 from ..models import Recipe, Ingredient
 from ..forms import RecipeForm
-from ..util import match_name, add_ingredient_from_form, get_shopping_list_group
+from ..util import match_name, add_ingredient_from_form, group_required, get_shopping_list_group
 
 logger = logging.getLogger(__name__)
 
 
-class RecipeListView(ListView):
+class RecipeListView(LoginRequiredMixin, ListView):
+    login_url = reverse('account_login')
     model = Recipe
     paginate_by = 100
 
     def get_queryset(self):
-        return Recipe.objects.exclude(name__iexact="Auto")
+        return Recipe.objects.filter(group=get_shopping_list_group(self.request.user)).exclude(name__iexact="Auto")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -30,48 +30,41 @@ class RecipeListView(ListView):
         return context
 
 
-@login_required
-def recipe_detail_view(request, recipe_name):
+@group_required
+def recipe_detail_view(request, group, recipe_name):
     if recipe_name.lower() == "auto":
         closest_recipe, _ = Recipe.objects.get_or_create(
-            name='Auto'
+            name='Auto', group=group,
         )
         good_match = True
         template_name = "shopping_list/auto_shopping.html"
     else:
         recipe_name = recipe_name.replace('-', ' ')
-        closest_recipe, good_match = match_name(recipe_name, Recipe.objects)
+        closest_recipe, good_match = match_name(recipe_name, Recipe.objects.filter(group=group))
         template_name = "shopping_list/recipe_detail.html"
 
     if good_match:
         form = add_ingredient_from_form(request, on_shopping_list=False, recipe=closest_recipe)
-        group = get_shopping_list_group(request.user)
         context = {
             "form": form,
             "recipe": closest_recipe,
-            "ingredient_list": closest_recipe.ingredient_set.filter(on_shopping_list=False, product__group=group).order_by(Lower('product__category__name'), Lower('product__name')),
+            "ingredient_list": closest_recipe.ingredient_set.filter(on_shopping_list=False).order_by(Lower('product__category__name'), Lower('product__name')),
         }
         return render(request, template_name, context=context)
     else:
         # Return recipe no result view
-        error_context = {
-            "error": f"No such recipe '{recipe_name}' found.",
-            "best_guess_name": closest_recipe.name,
-            "best_guess_slug": closest_recipe.name.replace(" ", "-").lower(),
-        }
         best_guess_slug = closest_recipe.name.replace(" ","-").lower()
         messages.error(request, f"No such recipe '{recipe_name}' found. Did you mean <a href=\"{reverse('recipe-detail', args=[best_guess_slug])}\">{closest_recipe.name}</a>?", extra_tags="safe")
         return RecipeListView.as_view()(request)
 
 
-@login_required
 def auto_shopping(request):
     """Show the auto-shopping list."""
     return recipe_detail_view(request, "Auto")
 
 
-@login_required
-def recipe_create(request):
+@group_required
+def recipe_create(request, group):
     """Create a new recipe.
 
     The relevant form is placed within the RecipeListView, because its footprint is very small.
@@ -80,21 +73,24 @@ def recipe_create(request):
         form = RecipeForm(request.POST)
         if form.is_valid():
             recipe_name = form.cleaned_data['name']
-            if not Recipe.objects.filter(name__iexact=recipe_name).exists():
-                recipe = form.save()
+            if not Recipe.objects.filter(name__iexact=recipe_name, group=group).exists():
+                recipe = form.save(commit=False)
+                recipe.group = group
+                recipe.added_by = request.user
+                recipe.save()
                 return HttpResponseRedirect(reverse('recipe-detail', args=[recipe.name.replace(" ", "-")]))
             else:
                 messages.error(request, f"The recipe {recipe_name} already exists!")
     return HttpResponseRedirect(reverse('recipes'))
 
 
-@login_required
-def recipe_delete(request, pk):
+@group_required
+def recipe_delete(request, group, pk):
     """Deletes the recipe with id 'pk' and returns the user to the recipe list view.
     """
     if request.method == "POST":
         try:
-            recipe = Recipe.objects.get(pk=pk)
+            recipe = Recipe.objects.get(pk=pk, group=group)
             if recipe.name != "Auto":
                 recipe.delete()
         except Recipe.DoesNotExist:
@@ -102,10 +98,11 @@ def recipe_delete(request, pk):
     return HttpResponseRedirect(reverse('recipes'))
 
 
-def recipe_to_shopping_list(request, pk):
-    if request.method == "POST" and request.user.is_authenticated:
+@group_required
+def recipe_to_shopping_list(request, group, pk):
+    if request.method == "POST":
         try:
-            recipe = Recipe.objects.get(pk=pk)
+            recipe = Recipe.objects.get(pk=pk, group=group)
 
             for ingredient in recipe.ingredient_set.all():
                 list_ingredient = Ingredient()
@@ -120,10 +117,11 @@ def recipe_to_shopping_list(request, pk):
             logger.error(f"Recipe with id {pk} not found")
 
 
-def remove_from_recipe(request, pk=None, on_shopping_list=False):
+@group_required
+def remove_from_recipe(request, group, pk=None, on_shopping_list=False):
     if request.method == "POST":
         if pk:
-            recipe = Recipe.objects.get(pk=pk)
+            recipe = Recipe.objects.get(pk=pk, group=group)
         else:
             recipe = None
 
@@ -136,7 +134,7 @@ def remove_from_recipe(request, pk=None, on_shopping_list=False):
                     if recipe:
                         base_set = recipe.ingredient_set  # Only delete ingredients from this recipe
                     else:
-                        base_set = Ingredient.objects.all()  # No recipe -> Delete from all recipes (dangerous!)
+                        base_set = Ingredient.objects.filter(product__group=group)  # No recipe -> Delete from all recipes (dangerous!)
                     for same_named_ingredient in base_set.filter(on_shopping_list=on_shopping_list, 
                                                                            product__name__iexact=name):
                         same_named_ingredient.delete()
