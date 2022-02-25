@@ -1,12 +1,13 @@
 from django.db import models
 from django.db.models.functions import Lower
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 
 class Category(models.Model):
     """Type of product. Typically related to aisle."""
     name = models.CharField(max_length=80)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -18,6 +19,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, help_text="This should indicate a type of product", blank=True, null=True,
                                  on_delete=models.SET_NULL)
     pluralised_name = models.CharField(max_length=80, verbose_name="Pluralised Product Name", blank=True, null=True, default="")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -25,16 +27,6 @@ class Product(models.Model):
     def get_absolute_url(self):
         slugged_name = self.name.replace(" ", "-").lower()
         return reverse('product-detail', args=[slugged_name])
-
-    def copies_on_shopping_list(self):
-        return self.ingredient_set.filter(on_shopping_list=True)
-
-    def number_of_relevant_recipes(self):
-        return self.ingredient_set.filter(on_shopping_list=False).count()
-
-    def relevant_recipes(self):
-        for ingredient in self.ingredient_set.filter(on_shopping_list=False):
-            yield ingredient.recipe
 
     class Meta:
         ordering = ['category']
@@ -46,6 +38,7 @@ class Recipe(models.Model):
     name = models.CharField(max_length=80)
     added_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     source = models.CharField(max_length=200, blank=True, null=True, default="")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -53,28 +46,6 @@ class Recipe(models.Model):
     def get_absolute_url(self):
         slugged_name = self.name.replace(" ", "-").lower()
         return reverse('recipe-detail', args=[slugged_name])
-
-    def get_ingredient_count(self):
-        return self.ingredient_set.all().count()
-
-    def get_ingredients_by_category(self):
-        """Returns ingredients of this Recipe.
-        
-        Ignores items on the shopping list, which are copies of the others."""
-        products_by_category = {}
-        for ingredient in self.ingredient_set.all():
-            if not ingredient.on_shopping_list:
-                category = ingredient.product.category
-                if category in products_by_category:
-                    products_by_category[category].append(ingredient)
-                else:
-                    products_by_category[category] = [ingredient]
-        return products_by_category
-
-    def get_ingredient_list(self):
-        """Returns ingredients of this Recipe, ordered by category name.
-        """
-        return self.ingredient_set.filter(on_shopping_list=False).order_by(Lower('product__category__name'), Lower('product__name'))
 
     def get_remove_url(self):
         """Returns the relevant url to the view that will remove items from this recipe.

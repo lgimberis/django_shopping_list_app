@@ -13,10 +13,10 @@
 
   <hr>
 
-  {% if product.copies_on_shopping_list %}
+  {% if copies_on_shopping_list %}
   <h2>Currently on the shopping list:</h2>
   <ul>
-      {% for ingredient in product.copies_on_shopping_list %}
+      {% for ingredient in copies_on_shopping_list %}
       <li>{{ ingredient }}</li>
       {% endfor %}
   </ul>
@@ -25,10 +25,10 @@
   {% endif %}
   <hr>
 
-  {% if product.number_of_relevant_recipes %}
-    <h2>Used in {{ product.number_of_relevant_recipes }} recipe{{ product.number_of_relevant_recipes | pluralize:",s" }}:</h2>
+  {% if number_of_recipes %}
+    <h2>Used in {{ number_of_recipes }} recipe{{ number_of_recipes | pluralize:",s" }}:</h2>
     <ul>
-        {% for recipe in product.relevant_recipes %}
+        {% for recipe in recipes %}
         <li><a href="{{ recipe.get_absolute_url }}">{{ recipe.name }}</a></li>
         {% endfor %}
     </ul>

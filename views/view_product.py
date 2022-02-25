@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from ..models import Product
 from ..forms import ProductForm
 from .view_recipe import *
-from ..util import match_name
+from ..util import match_name, get_shopping_list_group
 
 
 @login_required
@@ -58,9 +58,14 @@ def product_detail_view(request, product_name):
             # Create default form
             bound_form = ProductForm(initial={key: getattr(closest_model, key) for key in ["name", "category", "pluralised_name"]})
 
+        group = get_shopping_list_group(request.user)
+        recipes = [ingredient.recipe for ingredient in closest_model.ingredient_set.filter(on_shopping_list=False, product__group=group)]
         context = {
             "form": bound_form,
-            "product": closest_model
+            "product": closest_model,
+            "copies_on_shopping_list": closest_model.ingredient_set.filter(on_shopping_list=True, product__group=group),
+            "number_of_recipes": len(recipes),
+            "recipes": recipes,
         }
 
         return render(request, "shopping_list/product_detail.html", context=context)

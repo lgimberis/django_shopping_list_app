@@ -16,7 +16,7 @@ from ..models import Recipe, Ingredient, Category
 
 from .view_recipe import *
 from .view_product import *
-from ..util import add_ingredient_from_form
+from ..util import add_ingredient_from_form, get_shopping_list_group
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,9 @@ def index(request):
     Also provide links to creating alternative lists."""
 
     form = add_ingredient_from_form(request, on_shopping_list=True, recipe=None)
+    group = get_shopping_list_group(request.user)
     context = {
-        "ingredient_list": Ingredient.objects.filter(on_shopping_list=True).order_by(Lower('product__category__name'), Lower('product__name')),
+        "ingredient_list": Ingredient.objects.filter(on_shopping_list=True, group=group).order_by(Lower('product__category__name'), Lower('product__name')),
         "form": form,
         "remove_item_url": reverse('remove-from-shopping-list'),
     }

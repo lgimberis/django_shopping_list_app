@@ -31,3 +31,6 @@ def add_ingredient_from_form(request, on_shopping_list=False, recipe=None):
         # Create a blank form
         form = ShoppingListIngredientForm()
     return form
+
+def get_shopping_list_group(user):
+    return user.groups_set.filter(name__icontains="shopping_list_family")

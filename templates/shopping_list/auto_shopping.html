@@ -9,14 +9,12 @@
 
     {% crispy form %}
     <hr>
-    {% with recipe.get_ingredient_list as ingredient_list %}
     {% if ingredient_list %}
         {% include "shopping_list/ingredient_list.html" with remove_item_url=recipe.get_remove_url %}
     {% else %}
         <h2>Auto-shopping list is empty!</h2>
         <hr>
     {% endif %}
-    {% endwith %}
     <br>
 {% endblock %}
 

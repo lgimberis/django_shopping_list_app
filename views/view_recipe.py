@@ -3,6 +3,7 @@ import re
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.db.models.functions import Lower
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -11,7 +12,7 @@ from django.views.generic import ListView
 
 from ..models import Recipe, Ingredient
 from ..forms import RecipeForm
-from ..util import match_name, add_ingredient_from_form
+from ..util import match_name, add_ingredient_from_form, get_shopping_list_group
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,12 @@ def recipe_detail_view(request, recipe_name):
 
     if good_match:
         form = add_ingredient_from_form(request, on_shopping_list=False, recipe=closest_recipe)
-        context = {"form": form, "recipe": closest_recipe}
+        group = get_shopping_list_group(request.user)
+        context = {
+            "form": form,
+            "recipe": closest_recipe,
+            "ingredient_list": closest_recipe.ingredient_set.filter(on_shopping_list=False, product__group=group).order_by(Lower('product__category__name'), Lower('product__name')),
+        }
         return render(request, template_name, context=context)
     else:
         # Return recipe no result view
