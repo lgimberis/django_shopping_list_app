@@ -17,7 +17,7 @@ from ..models import Recipe, Ingredient, Category
 from .view_manage import *
 from .view_recipe import *
 from .view_product import *
-from ..util import add_ingredient_from_form, group_required, get_shopping_list_group
+from ..util import add_ingredient_from_form, group_required
 
 logger = logging.getLogger(__name__)
 

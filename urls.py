@@ -20,5 +20,9 @@ urlpatterns = [
     path('users/', views.users, name='users'),  # Complete list of users
     path('automatic-shopping/', views.auto_shopping, name='auto'),  # Complete specification for auto-shopping
     path('remove-from-shopping-list/', views.remove_from_shopping_list, name='remove-from-shopping-list'),
-    path('manage', views.manage, name='manage'),
+    path('manage/', views.manage, name='manage'),
+    path('manage/create', views.manage_create, name='manage-create'),
+    path('manage/delete', views.manage_delete, name='manage-delete'),
+    path('manage/join', views.manage_join, name='manage-join'),
+    path('manage/leave', views.manage_leave, name='manage-leave'),
 ]
