@@ -14,28 +14,12 @@ from django.forms import inlineformset_factory, BaseInlineFormSet
 
 from ..models import Recipe, Ingredient, Category
 
+from .view_manage import *
 from .view_recipe import *
 from .view_product import *
-from ..util import add_ingredient_from_form, group_required
+from ..util import add_ingredient_from_form, group_required, get_shopping_list_group
 
 logger = logging.getLogger(__name__)
-
-
-@login_required
-def manage(request):
-    """Allow the user to manage their group.
-    
-    """
-    # If in a group,
-    # Show the button to invite others
-    # Show a button for leaving the group
-    # Show a button for destroying/deleting the group
-
-    # If not in a group,
-    # Show the button to create a group
-    # Show the button to create a temporary group from an example
-    # Show an input to join a group
-    return HttpResponse("")
 
 
 @group_required
