@@ -1,11 +1,11 @@
+from django.contrib.auth.models import Group, User
 from django.db import models
-from django.db.models.functions import Lower
 from django.urls import reverse
-from django.contrib.auth.models import User, Group
 
 
 class Category(models.Model):
     """Type of product. Typically related to aisle."""
+
     name = models.CharField(max_length=80)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
@@ -15,10 +15,22 @@ class Category(models.Model):
 
 class Product(models.Model):
     """Product that can be found in a shop."""
+
     name = models.CharField(max_length=80, verbose_name="Product Name")
-    category = models.ForeignKey(Category, help_text="This should indicate a type of product", blank=True, null=True,
-                                 on_delete=models.SET_NULL)
-    pluralised_name = models.CharField(max_length=80, verbose_name="Pluralised Product Name", blank=True, null=True, default="")
+    category = models.ForeignKey(
+        Category,
+        help_text="This should indicate a type of product",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+    pluralised_name = models.CharField(
+        max_length=80,
+        verbose_name="Pluralised Product Name",
+        blank=True,
+        null=True,
+        default="",
+    )
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -26,15 +38,15 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         slugged_name = self.name.replace(" ", "-").lower()
-        return reverse('product-detail', args=[slugged_name])
+        return reverse("product-detail", args=[slugged_name])
 
     class Meta:
-        ordering = ['category']
+        ordering = ["category"]
 
 
 class Recipe(models.Model):
-    """A collection of ingredients.
-    """
+    """A collection of ingredients."""
+
     name = models.CharField(max_length=80)
     added_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     source = models.CharField(max_length=200, blank=True, null=True, default="")
@@ -45,26 +57,24 @@ class Recipe(models.Model):
 
     def get_absolute_url(self):
         slugged_name = self.name.replace(" ", "-").lower()
-        return reverse('recipe-detail', args=[slugged_name])
+        return reverse("recipe-detail", args=[slugged_name])
 
     def get_remove_url(self):
-        """Returns the relevant url to the view that will remove items from this recipe.
-        """
+        """Returns the relevant url to the view that will remove items from this recipe."""
         return reverse("recipe-remove", args=[self.pk])
 
 
 class Rating(models.Model):
-    """A rating of a recipe.
-    """
+    """A rating of a recipe."""
+
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     value = models.IntegerField(default=0)
 
 
 class Ingredient(models.Model):
-    """A product with a specific amount, added by a person, related to a recipe.
+    """A product with a specific amount, added by a person, related to a recipe."""
 
-    """
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, blank=True, null=True)
     added_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)

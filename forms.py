@@ -1,36 +1,38 @@
-from django import forms
-from django.core.exceptions import ValidationError
-from django.urls import reverse
+import logging
+
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Field, ButtonHolder
+from crispy_forms.layout import ButtonHolder, Field, Layout, Submit
+from django import forms
+from django.urls import reverse
 from django_select2 import forms as s2forms
 
+from .models import Category, Ingredient, Product, Recipe
 from .util import get_shopping_list_group
-from .models import Product, Category, Ingredient, Recipe
-
-
-import logging
 
 logger = logging.getLogger(__name__)
 
 
-class SingleTagWidget(s2forms.Select2Mixin, s2forms.Select2TagMixin, s2forms.forms.Select):
+class SingleTagWidget(
+    s2forms.Select2Mixin, s2forms.Select2TagMixin, s2forms.forms.Select
+):
     queryset = None
     search_fields = [
-        'name__icontains',
+        "name__icontains",
     ]
 
     def __init__(self, *args, **kwargs):
         if not self.queryset:
-            raise Exception('self.queryset must be set')
+            raise Exception("self.queryset must be set")
         super().__init__(*args, **kwargs)
 
     def value_from_datadict(self, data, files, name):
-        """Create objects for given non-pimary-key values. Return list of all primary keys.
+        """Create objects for given non-pimary-key values.
+
+        Return list of all primary keys.
         """
 
         value = super().value_from_datadict(data, files, name)
-        # Values are either a number for a matched ID, or a string of user input.
+        # Return value is either a number (matched to PK), or a string (direct user input)
         try:
             pk = int(value)
             return value
@@ -71,61 +73,61 @@ class CategoryTagWidget(SingleTagWidget):
         category.save()
         return category
 
+
 class ProductForm(forms.ModelForm):
-    """Product creation form.
-    """
+    """Product creation form."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['pluralised_name'].label = "Plural Product Name (if different)"
-        self.fields['category'].required = True
+        self.fields["pluralised_name"].label = "Plural Product Name (if different)"
+        self.fields["category"].required = True
         self.helper = FormHelper()
-        self.helper.form_class = 'row row-cols-lg-4'
-        self.helper.label_class = 'col'
-        self.helper.field_class = 'col'
-        self.helper.field_template = 'bootstrap5/layout/inline_field.html'
-        self.helper.form_method = 'post'
-        self.helper.form_action = reverse('product-create')
+        self.helper.form_class = "row row-cols-lg-4"
+        self.helper.label_class = "col"
+        self.helper.field_class = "col"
+        self.helper.field_template = "bootstrap5/layout/inline_field.html"
+        self.helper.form_method = "post"
+        self.helper.form_action = reverse("product-create")
         self.helper.layout = Layout(
-            Field('name', css_class="col", autocomplete="off"),
-            Field('category', css_class="col", autocomplete="off"),
-            Field('pluralised_name', css_class="col", autocomplete="off"),
-            ButtonHolder(Submit('submit', 'Create'), css_class="col"),
+            Field("name", css_class="col", autocomplete="off"),
+            Field("category", css_class="col", autocomplete="off"),
+            Field("pluralised_name", css_class="col", autocomplete="off"),
+            ButtonHolder(Submit("submit", "Create"), css_class="col"),
         )
 
     class Meta:
         model = Product
-        fields = ['name', 'category', 'pluralised_name']
+        fields = ["name", "category", "pluralised_name"]
         widgets = {
-            'category': CategoryTagWidget,
+            "category": CategoryTagWidget,
         }
-        help_texts = {'category': ''}  # Remove category addition help
+        help_texts = {"category": ""}  # Remove category addition help
 
 
 class ShoppingListIngredientForm(forms.ModelForm):
-    """Ingredient creation form that adds ingredients to the main shopping list.
-    """
+    """Ingredient creation form that adds ingredients to the main shopping list."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.form_class = 'row row-cols-lg-4'
-        self.helper.label_class = 'col'
-        self.helper.field_class = 'col'
-        self.helper.field_template = 'bootstrap5/layout/inline_field.html'
-        self.helper.form_method = 'post'
-        self.helper.form_action = ''
+        self.helper.form_class = "row row-cols-lg-4"
+        self.helper.label_class = "col"
+        self.helper.field_class = "col"
+        self.helper.field_template = "bootstrap5/layout/inline_field.html"
+        self.helper.form_method = "post"
+        self.helper.form_action = ""
         self.helper.layout = Layout(
-            Field('product', css_class="col"),
-            Field('amount', css_class="col", autocomplete="off"),
-            ButtonHolder(Submit('submit', 'Add to list'), css_class="col"),
+            Field("product", css_class="col"),
+            Field("amount", css_class="col", autocomplete="off"),
+            ButtonHolder(Submit("submit", "Add to list"), css_class="col"),
         )
 
     class Meta:
         model = Ingredient
-        fields = ['product', 'amount']
+        fields = ["product", "amount"]
         widgets = {
-            'product': ProductTagWidget,
-            'amount': forms.TextInput,
+            "product": ProductTagWidget,
+            "amount": forms.TextInput,
         }
 
 
@@ -140,12 +142,15 @@ class RecipeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.form_class = 'row row-cols-lg-4'
-        self.helper.form_method = 'post'
-        self.helper.form_action = reverse('recipe-create')
-        self.helper.field_template = 'bootstrap5/layout/inline_field.html'
-        self.helper.add_input(Submit('create', 'Create'))
+        self.helper.form_class = "row row-cols-lg-4"
+        self.helper.form_method = "post"
+        self.helper.form_action = reverse("recipe-create")
+        self.helper.field_template = "bootstrap5/layout/inline_field.html"
+        self.helper.add_input(Submit("create", "Create"))
 
     class Meta:
         model = Recipe
-        fields = ['name', 'source', ]
+        fields = [
+            "name",
+            "source",
+        ]

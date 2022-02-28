@@ -1,15 +1,14 @@
-from os import urandom
 import base64
+from os import urandom
 
-from django.contrib.auth.models import Group
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
-from django.conf import settings
-from django.core.cache import cache
-from django.urls import reverse
 from django import forms
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
+from django.core.cache import cache
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.urls import reverse
 
 from ..util import get_shopping_list_group
 
@@ -30,14 +29,12 @@ def decrypt(key: str) -> int:
 
 
 class InviteEntryForm(forms.Form):
-    link = forms.CharField(label='Invite key')
+    link = forms.CharField(label="Invite key")
 
 
 @login_required
 def manage(request):
-    """Allow the user to manage their group.
-    
-    """
+    """Allow the user to manage their group."""
     group = get_shopping_list_group(request.user)
     context = {"group": group}
     if group:
@@ -59,21 +56,23 @@ def manage(request):
 
 @login_required
 def manage_join(request):
-    """Attempt to join a group.
-    """
+    """Attempt to join a group."""
     if request.method == "POST":
         form = InviteEntryForm(request.POST)
         if form.is_valid():
-            uuid = form.cleaned_data['link']
+            uuid = form.cleaned_data["link"]
             new_group = decrypt(uuid)
             if new_group:
                 group = get_shopping_list_group(request.user)
                 if group:
-                    #If user is already in a group
+                    # If user is already in a group
                     if group == new_group:
                         messages.error(request, "You are already in this group")
                     else:
-                        messages.error(request, "You are already in a group, leave before joining another")
+                        messages.error(
+                            request,
+                            "You are already in a group, leave before joining another",
+                        )
                 else:
                     # User is not in a group, and should join this group
                     request.user.groups.add(group)
@@ -81,39 +80,41 @@ def manage_join(request):
             else:
                 # User followed a bad link
                 messages.error(request, "Invalid or expired invite link")
-    return HttpResponseRedirect(reverse('manage'))
+    return HttpResponseRedirect(reverse("manage"))
 
 
 @login_required
 def manage_create(request):
-    """Create a group.
-    """
+    """Create a group."""
     group = get_shopping_list_group(request.user)
     if group:
-        messages.error(request, "You are already in a group, leave before creating another")
+        messages.error(
+            request, "You are already in a group, leave before creating another"
+        )
     else:
         new_group = Group(name="shopping_list_family")
         new_group.name = f"{new_group.name}_{new_group.pk}"
         request.user.groups.add(new_group)
-        messages.info(request, "Group successfully created! You may now use the shopping list app.")
-    return HttpResponseRedirect(reverse('manage'))
+        messages.info(
+            request,
+            "Group successfully created! You may now use the shopping list app.",
+        )
+    return HttpResponseRedirect(reverse("manage"))
 
 
 @login_required
 def manage_leave(request):
-    """Leave a group. TODO reassign 'owner' to a remaining user.
-    """
+    """Leave a group. TODO reassign 'owner' to a remaining user."""
     group = get_shopping_list_group(request.user)
     if group:
         request.user.groups.remove(group)
-    return HttpResponseRedirect(reverse('manage'))
+    return HttpResponseRedirect(reverse("manage"))
 
 
 @login_required
 def manage_delete(request):
-    """Delete a group. TODO restrict to group owner.
-    """
+    """Delete a group. TODO restrict to group owner."""
     group = get_shopping_list_group(request.user)
     if group:
         group.delete()
-    return HttpResponseRedirect(reverse('manage'))
+    return HttpResponseRedirect(reverse("manage"))

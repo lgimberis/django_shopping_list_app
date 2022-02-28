@@ -1,14 +1,15 @@
 from functools import wraps
 
-from django.contrib.auth.models import Group
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from fuzzywuzzy import fuzz, process
+from fuzzywuzzy import process
 
-from .models import Ingredient
 from .forms import ShoppingListIngredientForm
+from .models import Ingredient
+
 
 def match_name(name, objects):
     matched_objects = objects.filter(name__iexact=name)
@@ -16,8 +17,11 @@ def match_name(name, objects):
         return matched_objects[0], True
     else:
         # No matching results - return a list ordered with Levenshtein Distance
-        best_name, best_score = process.extractOne(name, [trial.name for trial in objects.all()])
+        best_name, best_score = process.extractOne(
+            name, [trial.name for trial in objects.all()]
+        )
         return objects.get(name=best_name), best_score > 90
+
 
 def add_ingredient_from_form(request, on_shopping_list=False, recipe=None):
     if request.method == "POST":
@@ -26,12 +30,12 @@ def add_ingredient_from_form(request, on_shopping_list=False, recipe=None):
         if form.is_valid():
             shopping_list_item = Ingredient()
 
-            shopping_list_item.product = form.cleaned_data['product']
+            shopping_list_item.product = form.cleaned_data["product"]
             shopping_list_item.on_shopping_list = on_shopping_list
             shopping_list_item.added_by = request.user
             if recipe:
                 shopping_list_item.recipe = recipe
-            shopping_list_item.amount = form.cleaned_data['amount']
+            shopping_list_item.amount = form.cleaned_data["amount"]
             shopping_list_item.save()
             form = ShoppingListIngredientForm()
     else:
@@ -39,15 +43,17 @@ def add_ingredient_from_form(request, on_shopping_list=False, recipe=None):
         form = ShoppingListIngredientForm()
     return form
 
+
 def get_shopping_list_group(user):
     """Get the 'Shopping List Group' of the user.
-    
+
     Models can only be seen, modified, and deleted if they belong to the user's group.
     """
     try:
         return user.groups.get(name__icontains="shopping_list_family")
     except Group.DoesNotExist:
         return None
+
 
 def group_required(function):
     @wraps(function)
@@ -56,6 +62,10 @@ def group_required(function):
         if group:
             return login_required(function(request, group, *args, **kwargs))
         else:
-            messages.error(request, "To access the shopping list app, you must either create or join a group.")
-            return HttpResponseRedirect(reverse('manage'))
+            messages.error(
+                request,
+                "To access the shopping list app, you must either create or join a group.",
+            )
+            return HttpResponseRedirect(reverse("manage"))
+
     return wrapper

@@ -1,22 +1,14 @@
-from copy import deepcopy
-import itertools
 import logging
 import re
+from copy import deepcopy
 
 from django.db.models.functions import Lower
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
-from django.views import generic
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
+from django.views import generic
 
-from django.contrib.auth.decorators import login_required
-from django.forms import inlineformset_factory, BaseInlineFormSet
-
-from ..models import Recipe, Ingredient, Category
-
-from .view_manage import *
-from .view_recipe import *
-from .view_product import *
+from ..models import Category, Ingredient, Recipe
 from ..util import add_ingredient_from_form, group_required
 
 logger = logging.getLogger(__name__)
@@ -29,9 +21,11 @@ def index(request, group):
 
     form = add_ingredient_from_form(request, on_shopping_list=True, recipe=None)
     context = {
-        "ingredient_list": Ingredient.objects.filter(on_shopping_list=True, product__group=group).order_by(Lower('product__category__name'), Lower('product__name')),
+        "ingredient_list": Ingredient.objects.filter(
+            on_shopping_list=True, product__group=group
+        ).order_by(Lower("product__category__name"), Lower("product__name")),
         "form": form,
-        "remove_item_url": reverse('remove-from-shopping-list'),
+        "remove_item_url": reverse("remove-from-shopping-list"),
     }
     return render(request, "shopping_list/index.html", context=context)
 
@@ -41,13 +35,15 @@ def index_refill(request, group):
     auto = Recipe.objects.filter(name__iexact="Auto", group=group)
     if auto.count() > 0:
         auto_recipe = auto[0]
-        for ingredient in Ingredient.objects.filter(recipe=auto_recipe, product__group=group):
+        for ingredient in Ingredient.objects.filter(
+            recipe=auto_recipe, product__group=group
+        ):
             new_ingredient = deepcopy(ingredient)
             new_ingredient.id = None
             new_ingredient.recipe = None
             new_ingredient.on_shopping_list = True
             new_ingredient.save()
-    return HttpResponseRedirect(reverse('shopping-index'))
+    return HttpResponseRedirect(reverse("shopping-index"))
 
 
 @group_required
@@ -59,21 +55,25 @@ def remove_from_shopping_list(request, group):
                 try:
                     ingredient = Ingredient.objects.get(pk=pk)
                     name = ingredient.product.name
-                    for same_named_ingredient in Ingredient.objects.filter(on_shopping_list=True, product__name__iexact=name, product__group=group):
+                    for same_named_ingredient in Ingredient.objects.filter(
+                        on_shopping_list=True,
+                        product__name__iexact=name,
+                        product__group=group,
+                    ):
                         same_named_ingredient.delete()
                 except Ingredient.DoesNotExist:
                     pass  # We don't care, because we were going to delete it anyway
-    return HttpResponseRedirect(request.POST['next'])
+    return HttpResponseRedirect(request.POST["next"])
 
 
 class CategoryCreate(generic.CreateView):
     model = Category
-    fields = ['name']
+    fields = ["name"]
 
 
 class CategoryUpdate(generic.UpdateView):
     model = Category
-    fields = '__all__'
+    fields = "__all__"
 
 
 class CategoryDelete(generic.UpdateView):
@@ -81,6 +81,5 @@ class CategoryDelete(generic.UpdateView):
 
 
 def users(request):
-    """Allows a look at different users with access.
-    """
+    """Allows a look at different users with access."""
     return HttpResponse("")

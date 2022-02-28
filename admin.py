@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Category, Product, Recipe, Rating, Ingredient
+
+from .models import Category, Ingredient, Product, Rating, Recipe
 
 admin.site.register(Category)
 admin.site.register(Rating)
@@ -23,8 +24,8 @@ class RatingInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category')
-    list_filter = ('category', )
+    list_display = ("name", "category")
+    list_filter = ("category",)
     # We want to be able to add categories or shopping lists from new products
     inlines = [IngredientInline]
 
@@ -32,11 +33,11 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     inlines = [IngredientInline, RatingInline]
-    list_display = ('name', 'added_by')
+    list_display = ("name", "added_by")
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'recipe')
-    list_filter = ('product', 'recipe', 'added_by')
+    list_display = ("name", "category", "recipe")
+    list_filter = ("product", "recipe", "added_by")
     inlines = []
