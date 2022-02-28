@@ -15,6 +15,7 @@ from ..util import get_shopping_list_group
 
 SECONDS_IN_DAY = 86400
 
+
 def encrypt(pk: int) -> None:
     """Generate a random invitation link and put it in our cache."""
     random_bytes = urandom(32)
@@ -22,7 +23,7 @@ def encrypt(pk: int) -> None:
     key = f"group-{pk}-{key.decode('utf-8')}"
     cache.set(key, pk, SECONDS_IN_DAY)
     return key
-    
+
 
 def decrypt(key: str) -> int:
     return cache.get(key)

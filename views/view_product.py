@@ -59,7 +59,6 @@ def product_detail_view(request, group, product_name):
             # Create default form
             bound_form = ProductForm(initial={key: getattr(closest_model, key) for key in ["name", "category", "pluralised_name"]})
 
-        group = get_shopping_list_group(request.user)
         recipes = [ingredient.recipe for ingredient in closest_model.ingredient_set.filter(on_shopping_list=False)]
         context = {
             "form": bound_form,

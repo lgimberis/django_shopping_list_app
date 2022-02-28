@@ -56,6 +56,6 @@ def group_required(function):
         if group:
             return login_required(function(request, group, *args, **kwargs))
         else:
-            messages.info(request, "To access the shopping list app, you must either create or join a group.")
+            messages.error(request, "To access the shopping list app, you must either create or join a group.")
             return HttpResponseRedirect(reverse('manage'))
     return wrapper
