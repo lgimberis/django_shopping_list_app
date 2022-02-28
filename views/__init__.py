@@ -9,7 +9,8 @@ from django.urls import reverse
 from django.views import generic
 
 from ..models import Category, Ingredient, Recipe
-from ..util import add_ingredient_from_form, group_required
+from ..util import group_required
+from .view_recipe import add_ingredient_from_form
 
 logger = logging.getLogger(__name__)
 

@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import ListView
 
-from ..forms import RecipeForm
+from ..forms import RecipeForm, ShoppingListIngredientForm
 from ..models import Ingredient, Recipe
 from ..util import (
     add_ingredient_from_form,
@@ -35,6 +35,27 @@ class RecipeListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["form"] = RecipeForm()
         return context
+
+
+def add_ingredient_from_form(request, on_shopping_list=False, recipe=None):
+    if request.method == "POST":
+        # Try to add the item to the shopping list
+        form = ShoppingListIngredientForm(request.POST)
+        if form.is_valid():
+            shopping_list_item = Ingredient()
+
+            shopping_list_item.product = form.cleaned_data["product"]
+            shopping_list_item.on_shopping_list = on_shopping_list
+            shopping_list_item.added_by = request.user
+            if recipe:
+                shopping_list_item.recipe = recipe
+            shopping_list_item.amount = form.cleaned_data["amount"]
+            shopping_list_item.save()
+            form = ShoppingListIngredientForm()
+    else:
+        # Create a blank form
+        form = ShoppingListIngredientForm()
+    return form
 
 
 @group_required
