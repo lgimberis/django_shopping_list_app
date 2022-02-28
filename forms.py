@@ -20,11 +20,6 @@ class SingleTagWidget(
         "name__icontains",
     ]
 
-    def __init__(self, *args, **kwargs):
-        if not self.queryset:
-            raise Exception("self.queryset must be set")
-        super().__init__(*args, **kwargs)
-
     def value_from_datadict(self, data, files, name):
         """Create objects for given non-pimary-key values.
 

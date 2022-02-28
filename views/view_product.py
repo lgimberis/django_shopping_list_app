@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models.functions import Lower
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import generic
 
 from ..forms import ProductForm
@@ -100,7 +100,7 @@ def product_detail_view(request, group, product_name):
 class ProductListView(LoginRequiredMixin, generic.ListView):
     model = Product
     paginate_by = 100
-    login_url = reverse("account_login")
+    login_url = reverse_lazy("account_login")
 
     def get_queryset(self):
         return Product.objects.filter(

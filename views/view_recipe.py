@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models.functions import Lower
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView
 
 from ..forms import RecipeForm, ShoppingListIngredientForm
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class RecipeListView(LoginRequiredMixin, ListView):
-    login_url = reverse("account_login")
+    login_url = reverse_lazy("account_login")
     model = Recipe
     paginate_by = 100
 
