@@ -11,12 +11,7 @@ from django.views.generic import ListView
 
 from ..forms import RecipeForm, ShoppingListIngredientForm
 from ..models import Ingredient, Recipe
-from ..util import (
-    add_ingredient_from_form,
-    get_shopping_list_group,
-    group_required,
-    match_name,
-)
+from ..util import get_shopping_list_group, group_required, match_name
 
 logger = logging.getLogger(__name__)
 
