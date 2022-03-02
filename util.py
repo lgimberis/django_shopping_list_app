@@ -36,7 +36,7 @@ def group_required(function):
     def wrapper(request, *args, **kwargs):
         group = get_shopping_list_group(request.user)
         if group:
-            return login_required(function(request, group, *args, **kwargs))
+            return function(request, group, *args, **kwargs)
         else:
             messages.error(
                 request,

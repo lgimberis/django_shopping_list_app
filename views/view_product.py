@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 
-from ..forms import ProductForm
+from ..forms import product_form_builder
 from ..models import Product
 from ..util import get_shopping_list_group, group_required, match_name
 
@@ -24,7 +24,7 @@ def product_delete(request, group, pk):
 @group_required
 def product_create(request, group):
     if request.method == "POST":
-        form = ProductForm(request.POST)
+        form = product_form_builder(request.user)(request.POST)
         if form.is_valid():
             try:
                 product = Product.objects.get(
@@ -53,6 +53,7 @@ def product_detail_view(request, group, product_name):
     )
 
     if good_match:
+        ProductForm = product_form_builder(request.user)
         if request.method == "POST":
             # Process existing form data
             bound_form = ProductForm(request.POST)
@@ -109,5 +110,5 @@ class ProductListView(LoginRequiredMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["form"] = ProductForm()
+        context["form"] = product_form_builder(self.request.user)()
         return context

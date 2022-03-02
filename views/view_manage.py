@@ -75,7 +75,7 @@ def manage_join(request):
                         )
                 else:
                     # User is not in a group, and should join this group
-                    request.user.groups.add(group)
+                    request.user.groups.add(new_group)
                     messages.info(request, "Successfully joined group! Welcome")
             else:
                 # User followed a bad link
@@ -93,7 +93,9 @@ def manage_create(request):
         )
     else:
         new_group = Group(name="shopping_list_family")
+        new_group.save()
         new_group.name = f"{new_group.name}_{new_group.pk}"
+        new_group.save()
         request.user.groups.add(new_group)
         messages.info(
             request,

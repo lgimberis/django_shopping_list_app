@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView
 
-from ..forms import RecipeForm, ShoppingListIngredientForm
+from ..forms import RecipeForm, shopping_list_ingredient_form_builder
 from ..models import Ingredient, Recipe
 from ..util import get_shopping_list_group, group_required, match_name
 
@@ -33,8 +33,10 @@ class RecipeListView(LoginRequiredMixin, ListView):
 
 
 def add_ingredient_from_form(request, on_shopping_list=False, recipe=None):
+    ShoppingListIngredientForm = shopping_list_ingredient_form_builder(request.user)
     if request.method == "POST":
         # Try to add the item to the shopping list
+
         form = ShoppingListIngredientForm(request.POST)
         if form.is_valid():
             shopping_list_item = Ingredient()

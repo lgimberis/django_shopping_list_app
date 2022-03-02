@@ -16,9 +16,13 @@ class SingleTagWidget(
     s2forms.Select2Mixin, s2forms.Select2TagMixin, s2forms.forms.Select
 ):
     queryset = None
+    group = None
     search_fields = [
         "name__icontains",
     ]
+
+    def get_queryset(self):
+        return self.queryset
 
     def value_from_datadict(self, data, files, name):
         """Create objects for given non-pimary-key values.
@@ -30,10 +34,11 @@ class SingleTagWidget(
         # Return value is either a number (matched to PK), or a string (direct user input)
         try:
             pk = int(value)
-            return value
+            if self.get_queryset().filter(pk=pk, group=self.group).count():
+                return value
         except ValueError:
-            if self.get_queryset().filter(name__iexact=value).count():
-                pk = self.get_queryset().get(name__iexact=value).pk
+            if self.get_queryset().filter(name__iexact=value, group=self.group).count():
+                pk = self.get_queryset().get(name__iexact=value, group=self.group).pk
             else:
                 pk = self.create_and_get_instance(value).pk
             return pk
@@ -42,88 +47,103 @@ class SingleTagWidget(
         return self.queryset.create(name=value)
 
 
-class ProductTagWidget(SingleTagWidget):
-    queryset = Product.objects.all()
+def targeted_product_tag_widget(group):
+    class ProductTagWidget(SingleTagWidget):
+        group = group
+        queryset = Product.objects.filter(group=group)
 
-    def get_queryset(self):
-        return Product.objects.filter(group=get_shopping_list_group(self.request.user))
+        def create_and_get_instance(self, value):
+            product = Product(name=value, group=self.group, pluralised_name=value)
+            product.save()
+            return product
 
-    def create_and_get_instance(self, value):
-        product = super().create_and_get_instance(value)
-        product.pluralised_name = product.name
-        product.group = get_shopping_list_group(self.request.user)
-        product.save()
-        return product
-
-
-class CategoryTagWidget(SingleTagWidget):
-    queryset = Category.objects.all()
-
-    def get_queryset(self):
-        return Category.objects.filter(group=get_shopping_list_group(self.request.user))
-
-    def create_and_get_instance(self, value):
-        category = super().create_and_get_instance(value)
-        category.group = get_shopping_list_group(self.request.user)
-        category.save()
-        return category
+    return ProductTagWidget
 
 
-class ProductForm(forms.ModelForm):
-    """Product creation form."""
+def targeted_category_tag_widget(group):
+    class CategoryTagWidget(SingleTagWidget):
+        group = group
+        queryset = Category.objects.filter(group=group)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["pluralised_name"].label = "Plural Product Name (if different)"
-        self.fields["category"].required = True
-        self.helper = FormHelper()
-        self.helper.form_class = "row row-cols-lg-4"
-        self.helper.label_class = "col"
-        self.helper.field_class = "col"
-        self.helper.field_template = "bootstrap5/layout/inline_field.html"
-        self.helper.form_method = "post"
-        self.helper.form_action = reverse("product-create")
-        self.helper.layout = Layout(
-            Field("name", css_class="col", autocomplete="off"),
-            Field("category", css_class="col", autocomplete="off"),
-            Field("pluralised_name", css_class="col", autocomplete="off"),
-            ButtonHolder(Submit("submit", "Create"), css_class="col"),
+        def create_and_get_instance(self, value):
+            category = Category(name=value, group=group)
+            category.save()
+            return category
+
+    return CategoryTagWidget
+
+
+def product_form_builder(user):
+    group = get_shopping_list_group(user)
+
+    class ProductForm(forms.ModelForm):
+        """Product creation form."""
+
+        category = forms.ModelChoiceField(
+            queryset=Category.objects.filter(group=group),
+            widget=targeted_category_tag_widget(group),
         )
 
-    class Meta:
-        model = Product
-        fields = ["name", "category", "pluralised_name"]
-        widgets = {
-            "category": CategoryTagWidget,
-        }
-        help_texts = {"category": ""}  # Remove category addition help
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.fields["pluralised_name"].label = "Plural Product Name (if different)"
+            self.fields["category"].required = True
+            self.helper = FormHelper()
+            self.helper.form_class = "row row-cols-lg-4"
+            self.helper.label_class = "col"
+            self.helper.field_class = "col"
+            self.helper.field_template = "bootstrap5/layout/inline_field.html"
+            self.helper.form_method = "post"
+            self.helper.form_action = reverse("product-create")
+            self.helper.layout = Layout(
+                Field("name", css_class="col", autocomplete="off"),
+                Field("category", css_class="col", autocomplete="off"),
+                Field("pluralised_name", css_class="col", autocomplete="off"),
+                ButtonHolder(Submit("submit", "Create"), css_class="col"),
+            )
+
+        class Meta:
+            model = Product
+            fields = ["name", "category", "pluralised_name"]
+            help_texts = {"category": ""}  # Remove category addition help
+
+    return ProductForm
 
 
-class ShoppingListIngredientForm(forms.ModelForm):
-    """Ingredient creation form that adds ingredients to the main shopping list."""
+def shopping_list_ingredient_form_builder(user):
+    group = get_shopping_list_group(user)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.form_class = "row row-cols-lg-4"
-        self.helper.label_class = "col"
-        self.helper.field_class = "col"
-        self.helper.field_template = "bootstrap5/layout/inline_field.html"
-        self.helper.form_method = "post"
-        self.helper.form_action = ""
-        self.helper.layout = Layout(
-            Field("product", css_class="col"),
-            Field("amount", css_class="col", autocomplete="off"),
-            ButtonHolder(Submit("submit", "Add to list"), css_class="col"),
+    class ShoppingListIngredientForm(forms.ModelForm):
+        """Ingredient creation form that adds ingredients to the main shopping list."""
+
+        product = forms.ModelChoiceField(
+            queryset=Product.objects.filter(group=group),
+            widget=targeted_product_tag_widget(group),
         )
 
-    class Meta:
-        model = Ingredient
-        fields = ["product", "amount"]
-        widgets = {
-            "product": ProductTagWidget,
-            "amount": forms.TextInput,
-        }
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_class = "row row-cols-lg-4"
+            self.helper.label_class = "col"
+            self.helper.field_class = "col"
+            self.helper.field_template = "bootstrap5/layout/inline_field.html"
+            self.helper.form_method = "post"
+            self.helper.form_action = ""
+            self.helper.layout = Layout(
+                Field("product", css_class="col"),
+                Field("amount", css_class="col", autocomplete="off"),
+                ButtonHolder(Submit("submit", "Add to list"), css_class="col"),
+            )
+
+        class Meta:
+            model = Ingredient
+            fields = ["product", "amount"]
+            widgets = {
+                "amount": forms.TextInput,
+            }
+
+    return ShoppingListIngredientForm
 
 
 class RecipeForm(forms.ModelForm):
