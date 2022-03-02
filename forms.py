@@ -49,11 +49,10 @@ class SingleTagWidget(
 
 def targeted_product_tag_widget(group):
     class ProductTagWidget(SingleTagWidget):
-        group = group
         queryset = Product.objects.filter(group=group)
 
         def create_and_get_instance(self, value):
-            product = Product(name=value, group=self.group, pluralised_name=value)
+            product = Product(name=value, group=group, pluralised_name=value)
             product.save()
             return product
 
@@ -62,7 +61,6 @@ def targeted_product_tag_widget(group):
 
 def targeted_category_tag_widget(group):
     class CategoryTagWidget(SingleTagWidget):
-        group = group
         queryset = Category.objects.filter(group=group)
 
         def create_and_get_instance(self, value):

@@ -3,12 +3,13 @@
 {% block content %}
     {% if group %}
         <h2>Your Group</h2>
-        <p>Invite key: {{invite_link}}</p>
+        <p>Invite key (valid for 24 hours): {{invite_link}}</p>
+        <p>Invite others to join by sending them the above key and directing them to <a href={% url 'manage-join' %}>this URL</a>.</p>
         <p>Members:</p>
         
         <ul>
             {% for member in members %}
-                <li>{{ member.name }}</li>
+                <li>{{ member.username }}</li>
             {% empty %}
                 <li>No members found</li>
             {% endfor %}
