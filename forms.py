@@ -34,10 +34,10 @@ class SingleTagWidget(
         # Return value is either a number (matched to PK), or a string (direct user input)
         try:
             pk = int(value)
-            if self.get_queryset().filter(pk=pk, group=self.group).count():
-                return value
+            if self.get_queryset().filter(pk=pk).count():
+                return pk
         except ValueError:
-            if self.get_queryset().filter(name__iexact=value, group=self.group).count():
+            if self.get_queryset().filter(name__iexact=value).count():
                 pk = self.get_queryset().get(name__iexact=value, group=self.group).pk
             else:
                 pk = self.create_and_get_instance(value).pk
