@@ -8,7 +8,7 @@ from django.views import generic
 
 from ..forms import product_form_builder
 from ..models import Product
-from ..util import get_shopping_list_group, group_required, match_name
+from ..util import get_shopping_list_group, group_required, match_name, GroupRequiredMixin
 
 
 @group_required
@@ -98,7 +98,7 @@ def product_detail_view(request, group, product_name):
         return ProductListView.as_view(extra_context=error_context)(request)
 
 
-class ProductListView(LoginRequiredMixin, generic.ListView):
+class ProductListView(GroupRequiredMixin, generic.ListView):
     model = Product
     paginate_by = 100
     login_url = reverse_lazy("account_login")

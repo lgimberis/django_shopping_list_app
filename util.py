@@ -3,6 +3,7 @@ from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
+from django.contrib.auth.mixins import AccessMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from fuzzywuzzy import process
@@ -34,14 +35,40 @@ def get_shopping_list_group(user):
 def group_required(function):
     @wraps(function)
     def wrapper(request, *args, **kwargs):
-        group = get_shopping_list_group(request.user)
-        if group:
-            return function(request, group, *args, **kwargs)
+        if request.user.is_authenticated:
+            group = get_shopping_list_group(request.user)
+            if group:
+                return function(request, group, *args, **kwargs)
+            else:
+                messages.error(
+                    request,
+                    "To access the shopping list app, you must either create or join a group.",
+                )
+                return HttpResponseRedirect(reverse("manage"))
         else:
+            messages.error(
+                request,
+                "To access the shopping list app, you must be logged in.",
+            )
+            return HttpResponseRedirect(reverse("account_login"))
+
+    return wrapper
+
+class GroupRequiredMixin(AccessMixin):
+    """Verify that the current user is in a group."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "To access the shopping list app, you must be logged in.",
+            )
+            return HttpResponseRedirect(reverse("account_login"))
+        group = get_shopping_list_group(request.user)
+        if not group:
             messages.error(
                 request,
                 "To access the shopping list app, you must either create or join a group.",
             )
             return HttpResponseRedirect(reverse("manage"))
-
-    return wrapper
+        return super().dispatch(request, *args, **kwargs)

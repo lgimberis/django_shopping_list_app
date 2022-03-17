@@ -89,7 +89,7 @@ def manage_create(request):
     group = get_shopping_list_group(request.user)
     if group:
         messages.error(
-            request, "You are already in a group, leave before creating another"
+            request, "You are already in a group, leave before creating another."
         )
     else:
         new_group = Group(name="shopping_list_family")

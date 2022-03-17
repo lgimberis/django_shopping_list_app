@@ -11,12 +11,12 @@ from django.views.generic import ListView
 
 from ..forms import RecipeForm, shopping_list_ingredient_form_builder
 from ..models import Ingredient, Recipe
-from ..util import get_shopping_list_group, group_required, match_name
+from ..util import get_shopping_list_group, group_required, match_name, GroupRequiredMixin
 
 logger = logging.getLogger(__name__)
 
 
-class RecipeListView(LoginRequiredMixin, ListView):
+class RecipeListView(GroupRequiredMixin, ListView):
     login_url = reverse_lazy("account_login")
     model = Recipe
     paginate_by = 100
