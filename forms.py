@@ -43,6 +43,11 @@ class SingleTagWidget(
                 pk = self.create_and_get_instance(value).pk
             return pk
 
+    def build_attrs(self, base_attrs, extra_attrs=None):
+        attrs = super().build_attrs(base_attrs, extra_attrs)
+        attrs["data-token-separators"] = []  # Remove 'space' so we can add multi-word categories/products
+        return attrs
+
     def create_and_get_instance(self, value):
         return self.queryset.create(name=value)
 
