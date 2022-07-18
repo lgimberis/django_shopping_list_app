@@ -8,12 +8,88 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views import generic
 
-from ..models import Category, Ingredient, Recipe
-from ..util import group_required
+from rest_framework import viewsets, permissions, renderers
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, action
+
+from ..serializers import GroupSerializer, CategorySerializer, ProductSerializer, RecipeSerializer, IngredientSerializer
+
+from ..models import Category, Ingredient, Recipe, Product
+from ..util import group_required, get_shopping_list_group
 from .view_recipe import add_ingredient_from_form
 
 logger = logging.getLogger(__name__)
 
+
+# ViewSets define the view behavior.
+class GroupViewSet(viewsets.ModelViewSet):
+    serializer_class = GroupSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return self.request.user.groups.all()
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Category.objects.filter(group=get_shopping_list_group(self.request.user))
+        else:
+            return Category.objects.filter(owner__is_staff=True)
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Product.objects.filter(group=get_shopping_list_group(self.request.user))
+        else:
+            return Product.objects.filter(owner__is_staff=True)
+
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    serializer_class = RecipeSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Recipe.objects.filter(group=get_shopping_list_group(self.request.user))
+        else:
+            return Recipe.objects.filter(owner__is_staff=True)
+
+    @action(detail=True, methods=['get'], renderer_classes=[renderers.StaticHTMLRenderer])
+    def get_recipe_items(self, request, *args, **kwargs):
+        items = self.get_object().ingredient_set.filter(on_shopping_list=False)
+        return Response(items)
+
+    @action(detail=True, methods=['get'], renderer_classes=[renderers.StaticHTMLRenderer])
+    def get_recipe_items_in_shopping(self, request, *args, **kwargs):
+        items = self.get_object().ingredient_set.filter(on_shopping_list=True)
+        return Response(items)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+class IngredientViewSet(viewsets.ModelViewSet):
+    serializer_class = IngredientSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Ingredient.objects.filter(product__group=get_shopping_list_group(self.request.user))
+        else:
+            return Ingredient.objects.filter(owner__is_staff=True)
+
+    @action(detail=False)
+    def get_shopping(self, request, *args, **kwargs):
+        group = request.user.groups.get(name__icontains="shopping_list_family")
+        items = Ingredient.objects.filter(product__group=group, on_shopping_list=True)
+        return Response(IngredientSerializer(items, many=True, context={'request': request}).data)
 
 @group_required
 def index(request, group):

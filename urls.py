@@ -1,6 +1,10 @@
-from django.urls import path
+from django.urls import path, include
+
+from rest_framework import routers
 
 from . import views
+
+"""
 from .views.view_manage import (
     manage,
     manage_create,
@@ -22,9 +26,20 @@ from .views.view_recipe import (
     recipe_detail_view,
     recipe_to_shopping_list,
     remove_from_recipe,
-)
+)"""
+
+router = routers.DefaultRouter()
+router.register(r'groups', views.GroupViewSet, basename="group")
+router.register(r'categories', views.CategoryViewSet, basename="category")
+router.register(r'ingredients', views.IngredientViewSet, basename="ingredient")
+router.register(r'products', views.ProductViewSet, basename="product")
+router.register(r'recipes', views.RecipeViewSet, basename="recipe")
 
 urlpatterns = [
+    path("", include(router.urls)),
+]
+
+"""
     path("", views.index, name="shopping-index"),
     path("index-refill", views.index_refill, name="shopping-index-refill"),
     path("recipes/", RecipeListView.as_view(), name="recipes"),
@@ -52,5 +67,5 @@ urlpatterns = [
     path("manage/create", manage_create, name="manage-create"),
     path("manage/delete", manage_delete, name="manage-delete"),
     path("manage/join", manage_join, name="manage-join"),
-    path("manage/leave", manage_leave, name="manage-leave"),
-]
+    path("manage/leave", manage_leave, name="manage-leave"),"""
+
