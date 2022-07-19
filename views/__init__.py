@@ -51,6 +51,18 @@ class ProductViewSet(viewsets.ModelViewSet):
         else:
             return Product.objects.filter(owner__is_staff=True)
 
+    @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
+    def exists_by_name(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            queryset = self.get_queryset().filter(name__iexact=request.query_params['name'])
+            response = { "exists": queryset.count() == 1 }
+            if response["exists"]:
+                response["url"] = ProductSerializer(queryset.all()[0], context={'request': request}).data['url']
+            return Response(response)
+
+    def perform_create(self, serializer):
+        serializer.save(group=get_shopping_list_group(self.request.user))
+
 
 class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
@@ -90,6 +102,9 @@ class IngredientViewSet(viewsets.ModelViewSet):
         group = request.user.groups.get(name__icontains="shopping_list_family")
         items = Ingredient.objects.filter(product__group=group, on_shopping_list=True)
         return Response(IngredientSerializer(items, many=True, context={'request': request}).data)
+
+    def perform_create(self, serializer):
+        serializer.save(added_by=self.request.user)
 
 @group_required
 def index(request, group):

@@ -18,23 +18,22 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ProductSerializer(serializers.HyperlinkedModelSerializer):
+    group = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = Product
         fields = ['url', 'id', 'name', 'category', 'pluralised_name', 'group']
 
 
 class RecipeSerializer(serializers.HyperlinkedModelSerializer):
-    owner = serializers.ReadOnlyField(source='added_by.username')
-
     class Meta:
         model = Recipe
-        fields = ['url', 'id', 'name', 'owner', 'source', 'group']
+        fields = ['url', 'id', 'name', 'added_by', 'source', 'group']
 
 
 class IngredientSerializer(serializers.HyperlinkedModelSerializer):
-    owner = serializers.ReadOnlyField(source='added_by.username')
     name = serializers.ReadOnlyField(source='product.name')
+    added_by = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Ingredient
-        fields = ['url', 'id', 'product', 'name', 'recipe', 'owner', 'on_shopping_list', 'amount']
+        fields = ['url', 'id', 'product', 'name', 'recipe', 'added_by', 'on_shopping_list', 'amount']
