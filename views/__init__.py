@@ -74,18 +74,51 @@ class RecipeViewSet(viewsets.ModelViewSet):
         else:
             return Recipe.objects.filter(owner__is_staff=True)
 
-    @action(detail=True, methods=['get'], renderer_classes=[renderers.StaticHTMLRenderer])
+    @action(detail=True, methods=['get'], renderer_classes=[renderers.JSONRenderer])
     def get_recipe_items(self, request, *args, **kwargs):
-        items = self.get_object().ingredient_set.filter(on_shopping_list=False)
-        return Response(items)
+        try:
+            on_shopping_list = request.query_params['on_shopping_list'] == 'true'  # Ugh ... JS uses a lowercase 'true'.
+        except KeyError:
+            on_shopping_list = False
+
+        items = self.get_object().ingredient_set.filter(on_shopping_list=on_shopping_list)
+        return Response(IngredientSerializer(items, many=True, context={'request': request}).data)
+
+    @action(detail=True, methods=['post'])
+    def add_to_shopping(self, request, *args, **kwargs):
+        items = self.get_object().ingredient_set.all()
+        for item in items:
+            item.pk = None
+            item.on_shopping_list = True
+            print(repr(item))
+            item.save()
+        return Response({"status": 200})
 
     @action(detail=True, methods=['get'], renderer_classes=[renderers.StaticHTMLRenderer])
     def get_recipe_items_in_shopping(self, request, *args, **kwargs):
         items = self.get_object().ingredient_set.filter(on_shopping_list=True)
         return Response(items)
 
+    @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
+    def exists_by_name(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            queryset = self.get_queryset().filter(name__iexact=request.query_params['name'])
+            response = { "exists": queryset.count() == 1 }
+            return Response(response)
+
+    @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
+    def get_by_name(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            queryset = self.get_queryset().filter(name__iexact=request.query_params['name'])
+            response = { "exists": queryset.count() == 1 }
+            if response["exists"]:
+                recipe_data = RecipeSerializer(queryset.all()[0], context={'request': request}).data
+                response["recipe"] = recipe_data
+
+            return Response(response)
+
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(added_by=self.request.user, group=get_shopping_list_group(self.request.user))
 
 class IngredientViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
@@ -99,8 +132,18 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def get_shopping(self, request, *args, **kwargs):
+        items = self.get_queryset().filter(on_shopping_list=True)
+        return Response(IngredientSerializer(items, many=True, context={'request': request}).data)
+
+    @action(detail=False)
+    def get_recipe_items(self, request, *args, **kwargs):
         group = request.user.groups.get(name__icontains="shopping_list_family")
-        items = Ingredient.objects.filter(product__group=group, on_shopping_list=True)
+        if request.query_params['recipe'] != 'shopping':
+            recipe = Recipe.objects.get(name__iexact=request.query_params['name'], group=group)
+            on_shopping_list = request.query_params['on_shopping_list']
+            items = Ingredient.objects.filter(recipe=recipe, on_shopping_list=on_shopping_list)
+        else:
+            items = Ingredient.objects.filter(on_shopping_list=True)
         return Response(IngredientSerializer(items, many=True, context={'request': request}).data)
 
     def perform_create(self, serializer):

@@ -25,6 +25,9 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class RecipeSerializer(serializers.HyperlinkedModelSerializer):
+    added_by = serializers.PrimaryKeyRelatedField(read_only=True)
+    group = serializers.PrimaryKeyRelatedField(read_only=True)
+    
     class Meta:
         model = Recipe
         fields = ['url', 'id', 'name', 'added_by', 'source', 'group']
