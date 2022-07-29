@@ -25,8 +25,17 @@ class CategoryViewSet(viewsets.ModelViewSet):
         if self.request.user.is_authenticated:
             return Category.objects.filter(group=get_shopping_list_group(self.request.user))
         else:
+            # Show anonymous/unauthenticated users a preview using staff data
             return Category.objects.filter(owner__is_staff=True)
 
+    @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
+    def exists_by_name(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            queryset = self.get_queryset().filter(name__iexact=request.query_params['name'])
+            response = { "exists": queryset.count() == 1 }
+            if response["exists"]:
+                response["data"] = ProductSerializer(queryset.all()[0], context={'request': request}).data
+            return Response(response)
 
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
@@ -44,7 +53,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             queryset = self.get_queryset().filter(name__iexact=request.query_params['name'])
             response = { "exists": queryset.count() == 1 }
             if response["exists"]:
-                response["url"] = ProductSerializer(queryset.all()[0], context={'request': request}).data['url']
+                response["data"] = ProductSerializer(queryset.all()[0], context={'request': request}).data
             return Response(response)
 
     @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
