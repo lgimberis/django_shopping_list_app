@@ -37,6 +37,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
                 response["data"] = ProductSerializer(queryset.all()[0], context={'request': request}).data
             return Response(response)
 
+    def perform_create(self, serializer):
+        serializer.save(group=get_shopping_list_group(self.request.user))
+
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
