@@ -116,6 +116,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
             return Response(response)
 
+    @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
+    def get_checklist_recipe_name(self, request, *args, **kwargs):
+        return Response({"name": "auto"})
+
+    @action(detail=False, methods=['post'])
+    def add_checklist_to_shopping(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            items = self.get_queryset().get(name__iexact="Auto").ingredient_set.all()
+            for item in items:
+                item.recipe = None
+                item.pk = None
+                item.on_shopping_list = True
+                item.save()
+        return Response(None)
+
     def perform_create(self, serializer):
         serializer.save(added_by=self.request.user, group=get_shopping_list_group(self.request.user))
 
