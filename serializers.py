@@ -11,6 +11,11 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'name']
 
 
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+
 class CategorySerializer(serializers.HyperlinkedModelSerializer):
     group = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:

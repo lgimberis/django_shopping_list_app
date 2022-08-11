@@ -1,17 +1,67 @@
+from django.contrib.auth.models import Group
+
 from rest_framework import viewsets, permissions, renderers
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, action
 
-from ..serializers import GroupSerializer, CategorySerializer, ProductSerializer, RecipeSerializer, IngredientSerializer
+from ..serializers import GroupSerializer, CategorySerializer, ProductSerializer, RecipeSerializer, IngredientSerializer, UserSerializer
 
 from ..models import Category, Ingredient, Recipe, Product
-from ..util import get_shopping_list_group
+from ..util import get_shopping_list_group, generate_group_token, test_group_token
 
 
 # ViewSets define the view behavior.
 class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_group(self) -> Group:
+        """Get our user's group."""
+        if self.request.user.is_authenticated :
+            return get_shopping_list_group(self.request.user)
+
+    def has_no_group(self) -> bool:
+        """Return whether our user has a group. If not authed, return False."""
+        return self.request.user.is_authenticated and not self.get_group()
+
+    @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
+    def get_shopping_list_group(self, request, *args, **kwargs):
+        if group := self.get_group():
+            response = {'name': group.name, 'users': [UserSerializer(user).data for user in group.user_set.all()]}
+            return Response(response)
+        return Response({})
+
+    @action(detail=False, methods=['post'])
+    def create_shopping_list_group(self, request, *args, **kwargs):
+        if self.has_no_group():
+            group = Group()
+            group.save()
+            group.name = f"shopping_group_{group.pk}"
+            group.save()
+            self.request.user.groups.add(group)
+        return Response({})
+
+    @action(detail=False, methods=['post'])
+    def get_join_code(self, request, *args, **kwargs):
+        if group := self.get_group():
+            token = generate_group_token(group)
+            return Response({'token': token})
+        return Response({})
+
+    @action(detail=False, methods=['post'])
+    def test_join_code(self, request, *args, **kwargs):
+        if self.has_no_group():
+            if group := test_group_token(request.data['token']):
+                self.request.user.groups.add(group)
+        return Response({})
+
+    @action(detail=False, methods=['post'])
+    def leave(self, request, *args, **kwargs):
+        if group := self.get_group():
+            self.request.user.groups.remove(group)
+            if group.user_set.count() == 0:
+                group.delete()
+        return Response({})
 
     def get_queryset(self):
         return self.request.user.groups.all()

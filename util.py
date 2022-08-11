@@ -1,13 +1,35 @@
+import base64
+from os import urandom
 from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import AccessMixin
+from django.core.cache import cache
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from fuzzywuzzy import process
 
+
+SECONDS_IN_DAY = 86400
+
+
+def generate_group_token(group: Group) -> str:
+    """Generate a random invitation link and put it in our cache."""
+
+    pk = group.pk
+    random_bytes = urandom(32)
+    key = base64.urlsafe_b64encode(random_bytes).decode('utf-8')
+    full_key = f"{pk}-{key}"
+    cache.set(full_key, pk, SECONDS_IN_DAY)
+    return full_key
+
+
+def test_group_token(key: str) -> Group:
+    """If the given key is in our cache, return the group it corresponds to."""
+    if pk := cache.get(key):
+        return Group.objects.get(pk=pk)
 
 def match_name(name, objects):
     matched_objects = objects.filter(name__iexact=name)
@@ -27,7 +49,7 @@ def get_shopping_list_group(user):
     Models can only be seen, modified, and deleted if they belong to the user's group.
     """
     try:
-        return user.groups.get(name__icontains="shopping_list_family")
+        return user.groups.get(name__icontains="shopping_group")
     except Group.DoesNotExist:
         return None
 
