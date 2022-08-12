@@ -126,6 +126,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def list(self, request):
+        queryset = self.get_queryset().exclude(name__exact="Auto")
+        serializer = RecipeSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
     def get_queryset(self):
         if self.request.user.is_authenticated:
             return Recipe.objects.filter(group=get_shopping_list_group(self.request.user))
