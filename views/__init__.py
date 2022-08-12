@@ -159,6 +159,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             response = { "exists": queryset.count() == 1 }
             return Response(response)
 
+    @action(detail=False, methods=['get'])
+    def get_checklist(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            group = get_shopping_list_group(self.request.user)
+            try:
+                recipe = self.get_queryset().get(name__exact="Auto", group=group)
+            except Recipe.DoesNotExist:
+                # For the first time viewing the checklist we may need to create it
+                recipe = Recipe(name="Auto", group=group)
+                recipe.save()
+            recipe_data = RecipeSerializer(recipe, context={'request': request}).data
+            return Response({"exists": True, "recipe": recipe_data})
+
     @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
     def get_by_name(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
