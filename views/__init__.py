@@ -153,7 +153,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         for item in items:
             item.pk = None
             item.on_shopping_list = True
-            print(repr(item))
             item.save()
         return Response({"status": 200})
 
