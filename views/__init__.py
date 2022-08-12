@@ -24,12 +24,16 @@ class GroupViewSet(viewsets.ModelViewSet):
         """Return whether our user has a group. If not authed, return False."""
         return self.request.user.is_authenticated and not self.get_group()
 
-    @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
-    def get_shopping_list_group(self, request, *args, **kwargs):
+    def get_group_response(self):
+        """To be returned following each group operation."""
         if group := self.get_group():
             response = {'name': group.name, 'users': [UserSerializer(user).data for user in group.user_set.all()]}
             return Response(response)
         return Response({})
+
+    @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
+    def get_shopping_list_group(self, request, *args, **kwargs):
+        return self.get_group_response()
 
     @action(detail=False, methods=['post'])
     def create_shopping_list_group(self, request, *args, **kwargs):
@@ -39,7 +43,15 @@ class GroupViewSet(viewsets.ModelViewSet):
             group.name = f"shopping_group_{group.pk}"
             group.save()
             self.request.user.groups.add(group)
-        return Response({})
+        return self.get_group_response()
+
+    @action(detail=False, methods=['post'])
+    def leave(self, request, *args, **kwargs):
+        if group := self.get_group():
+            self.request.user.groups.remove(group)
+            if group.user_set.count() == 0:
+                group.delete()
+        return self.get_group_response()
 
     @action(detail=False, methods=['post'])
     def get_join_code(self, request, *args, **kwargs):
@@ -53,15 +65,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         if self.has_no_group():
             if group := test_group_token(request.data['token']):
                 self.request.user.groups.add(group)
-        return Response({})
-
-    @action(detail=False, methods=['post'])
-    def leave(self, request, *args, **kwargs):
-        if group := self.get_group():
-            self.request.user.groups.remove(group)
-            if group.user_set.count() == 0:
-                group.delete()
-        return Response({})
+        return self.get_group_response()
 
     def get_queryset(self):
         return self.request.user.groups.all()
