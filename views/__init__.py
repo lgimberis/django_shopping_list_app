@@ -1,3 +1,4 @@
+from turtle import update
 from django.contrib.auth.models import Group
 
 from rest_framework import viewsets, permissions, renderers
@@ -7,7 +8,13 @@ from rest_framework.decorators import api_view, action
 from ..serializers import GroupSerializer, CategorySerializer, ProductSerializer, RecipeSerializer, IngredientSerializer, UserSerializer
 
 from ..models import Category, Ingredient, Recipe, Product
-from ..util import get_shopping_list_group, generate_group_token, test_group_token
+from ..util import (
+    get_shopping_list_group, 
+    generate_group_token, 
+    test_group_token, 
+    read_shopping_hash, 
+    update_shopping_hash
+)
 
 
 # ViewSets define the view behavior.
@@ -154,6 +161,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             item.pk = None
             item.on_shopping_list = True
             item.save()
+        update_shopping_hash(self.request.user)
         return Response({"status": 200})
 
     @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
@@ -200,6 +208,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 item.pk = None
                 item.on_shopping_list = True
                 item.save()
+            update_shopping_hash(self.request.user)
         return Response(None)
 
     def perform_create(self, serializer):
@@ -209,6 +218,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def destroy(self, request, pk=None):
+        if self.request.user.is_authenticated:
+            try:
+                ingredient = self.get_queryset().get(pk=pk)
+                if ingredient.on_shopping_list:
+                    update_shopping_hash(self.request.user)
+            except Ingredient.DoesNotExist:
+                pass # Don't care
+        return super().destroy(request, pk)
+
+    def create(self, request):
+        if self.request.user.is_authenticated:
+            update_shopping_hash(self.request.user)
+        return super().create(request)
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
@@ -220,6 +244,10 @@ class IngredientViewSet(viewsets.ModelViewSet):
     def get_shopping(self, request, *args, **kwargs):
         items = self.get_queryset().filter(on_shopping_list=True)
         return Response(IngredientSerializer(items, many=True, context={'request': request}).data)
+
+    @action(detail=False)
+    def get_shopping_hash(self, request, *args, **kwargs):
+        return Response({'hash': read_shopping_hash(self.request.user)})
 
     @action(detail=False)
     def get_recipe_items(self, request, *args, **kwargs):

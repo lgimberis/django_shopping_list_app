@@ -4,7 +4,7 @@ from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.contrib.auth.mixins import AccessMixin
 from django.core.cache import cache
 from django.http import HttpResponseRedirect
@@ -13,6 +13,26 @@ from fuzzywuzzy import process
 
 
 SECONDS_IN_DAY = 86400
+
+
+def update_shopping_hash(user: User):
+    group = get_shopping_list_group(user)
+    hash_key = f"md5-shopping-{group.pk}"
+    if hash := cache.get(hash_key):
+        new_hash = hash + 1 if hash < 1E+9 else 1
+    else:
+        new_hash = 1
+    cache.set(hash_key, new_hash, SECONDS_IN_DAY)
+    return new_hash
+
+def read_shopping_hash(user: User):
+    """Read the MD5 hash of the current shopping list state."""
+
+    group = get_shopping_list_group(user)
+    if hash := cache.get(f"md5-shopping-{group.pk}"):
+        return hash
+    # If there is no MD5 hash in storage, generate one
+    return update_shopping_hash(user)
 
 
 def generate_group_token(group: Group) -> str:
