@@ -156,7 +156,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def add_to_shopping(self, request, *args, **kwargs):
-        items = self.get_object().ingredient_set.all()
+        items = self.get_object().ingredient_set.filter(on_shopping_list=False)
         for item in items:
             item.pk = None
             item.on_shopping_list = True
@@ -202,7 +202,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def add_checklist_to_shopping(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
-            items = self.get_queryset().get(name__iexact="Auto").ingredient_set.all()
+            items = self.get_queryset().get(name__iexact="Auto").ingredient_set.filter(on_shopping_list=False)
             for item in items:
                 item.recipe = None
                 item.pk = None
