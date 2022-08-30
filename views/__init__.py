@@ -167,7 +167,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
     def exists_by_name(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
-            queryset = self.get_queryset().filter(name__iexact=request.query_params['name'])
+            name = request.query_params['name'].strip()
+            queryset = self.get_queryset().filter(name__iexact=name)
             response = { "exists": queryset.count() == 1 }
             return Response(response)
 
