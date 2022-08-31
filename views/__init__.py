@@ -107,7 +107,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return Product.objects.filter(group=get_shopping_list_group(self.request.user))
+            return Product.objects.filter(group=get_shopping_list_group(self.request.user)).order_by('name')
         else:
             return Product.objects.filter(owner__is_staff=True)
 
