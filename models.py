@@ -8,10 +8,13 @@ class Category(models.Model):
 
     name = models.CharField(max_length=80)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    sorting_weight = models.IntegerField(default=0)
+    
+    def sorting_weight_default():
+        pass
 
     def __str__(self):
         return self.name
-
 
 class Product(models.Model):
     """Product that can be found in a shop."""
