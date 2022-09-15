@@ -43,7 +43,9 @@ class IngredientSerializer(serializers.HyperlinkedModelSerializer):
     name = serializers.ReadOnlyField(source='product.name')
     pluralised_name = serializers.ReadOnlyField(source='product.pluralised_name')
     added_by = serializers.PrimaryKeyRelatedField(read_only=True)
+    category = serializers.ReadOnlyField(source='product.category.name')
 
     class Meta:
         model = Ingredient
-        fields = ['url', 'id', 'product', 'name', 'pluralised_name', 'recipe', 'added_by', 'on_shopping_list', 'amount']
+        fields = ['url', 'id', 'product', 'name', 'pluralised_name', 'recipe', 'category', 'added_by', 'on_shopping_list', 'amount']
+
