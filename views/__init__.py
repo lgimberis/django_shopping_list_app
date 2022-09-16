@@ -115,6 +115,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     def exists_by_name(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
             queryset = self.get_queryset().filter(name__iexact=request.query_params['name'])
+            if queryset.count() == 0:
+                queryset = self.get_queryset().filter(pluralised_name__iexact=request.query_params['pluralised_name'])
             response = { "exists": queryset.count() == 1 }
             if response["exists"]:
                 response["data"] = ProductSerializer(queryset.all()[0], context={'request': request}).data

@@ -30,9 +30,6 @@ class Product(models.Model):
     pluralised_name = models.CharField(
         max_length=80,
         verbose_name="Pluralised Product Name",
-        blank=True,
-        null=True,
-        default="",
     )
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
