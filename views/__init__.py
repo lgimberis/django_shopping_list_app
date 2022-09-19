@@ -24,7 +24,7 @@ def _get_or_create_checklist(queryset, group):
         # For the first time viewing the checklist we may need to create it
         recipe = Recipe(name="Auto", group=group)
         recipe.save()
-        return recipe
+    return recipe
 
 # ViewSets define the view behavior.
 class GroupViewSet(viewsets.ModelViewSet):
