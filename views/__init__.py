@@ -17,12 +17,21 @@ from ..util import (
 )
 
 
+def _get_or_create_checklist(queryset, group):
+    try:
+        recipe = queryset.get(name__exact="Auto", group=group)
+    except Recipe.DoesNotExist:
+        # For the first time viewing the checklist we may need to create it
+        recipe = Recipe(name="Auto", group=group)
+        recipe.save()
+        return recipe
+
 # ViewSets define the view behavior.
 class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def get_group(self) -> Group:
+    def get_group(self):
         """Get our user's group."""
         if self.request.user.is_authenticated :
             return get_shopping_list_group(self.request.user)
@@ -39,18 +48,82 @@ class GroupViewSet(viewsets.ModelViewSet):
         return Response({})
 
     @action(detail=False, methods=['get'], renderer_classes=[renderers.JSONRenderer])
-    def get_shopping_list_group(self, request, *args, **kwargs):
+    def get_shopping_list_group(self, request, *args, **kwargs) -> Response:
         return self.get_group_response()
 
-    @action(detail=False, methods=['post'])
-    def create_shopping_list_group(self, request, *args, **kwargs):
+    def __create_group(self):
         if self.has_no_group():
             group = Group()
             group.save()
             group.name = f"shopping_group_{group.pk}"
             group.save()
             self.request.user.groups.add(group)
+            return group
+
+    @action(detail=False, methods=['post'])
+    def create_shopping_list_group(self, request, *args, **kwargs):
+        self.__create_group()
         return self.get_group_response()
+
+    @action(detail=False, methods=['post'])
+    def create_shopping_list_group_from_template(self, request, *args, **kwargs):
+        if self.has_no_group():
+            group = self.__create_group()
+            
+            # Load data files containing 'Template Group' data
+            import json
+            from pathlib import Path
+            with open(Path(__file__).parent.parent / 'template_group.json') as file:
+                template_data = json.load(file)
+
+                # Add categories first
+                if "categories" in template_data:
+                    for category in template_data["categories"]:
+                        _category = Category(name=category, group=group)
+                        _category.save()
+
+                # Add products
+                if "products" in template_data:
+                    for product in template_data["products"]:
+                        plural_name = (product["pluralised_name"] 
+                                if "pluralised_name" in product else product["name"])
+                        if "category" in product:
+                            category = Category.objects.get(group=group, name__exact=product["category"])
+                        else:
+                            category = None
+                        _product = Product(name=product["name"], pluralised_name=plural_name, 
+                                group=group, category=category)
+                        _product.save()
+
+                # Small helper function for ingredient addition
+                def _add_ingredient(ingredient, _recipe=None, on_list=False):
+                    _product = Product.objects.get(group=group, name__exact=ingredient["name"])
+                    amount = ingredient["amount"] if "amount" in ingredient else ""
+                    _ingredient = Ingredient(product=_product, recipe=_recipe, amount=amount, on_shopping_list=on_list)
+                    _ingredient.save()
+
+                # Add recipes
+                if "recipes" in template_data:
+                    for recipe in template_data["recipes"]:
+                        _recipe = Recipe(name=recipe["name"], source=recipe["source"], group=group)
+                        _recipe.save()
+
+                        for ingredient in recipe["ingredients"]:
+                            _add_ingredient(ingredient, _recipe)
+
+                # Add checklist
+                if "checklist" in template_data:
+                    _checklist = _get_or_create_checklist(Recipe.objects.filter(group=group), group)
+                    for ingredient in template_data["checklist"]:
+                        _add_ingredient(ingredient, _checklist)
+
+                # Add shopping
+                if "shopping" in template_data:
+                    for ingredient in template_data["shopping"]:
+                        _add_ingredient(ingredient, on_list=True)
+            
+            return self.get_group_response()
+        return Response({})
 
     @action(detail=False, methods=['post'])
     def leave(self, request, *args, **kwargs):
@@ -178,12 +251,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_checklist(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
             group = get_shopping_list_group(self.request.user)
-            try:
-                recipe = self.get_queryset().get(name__exact="Auto", group=group)
-            except Recipe.DoesNotExist:
-                # For the first time viewing the checklist we may need to create it
-                recipe = Recipe(name="Auto", group=group)
-                recipe.save()
+            recipe = _get_or_create_checklist(self.get_queryset(), group)
             recipe_data = RecipeSerializer(recipe, context={'request': request}).data
             return Response({"exists": True, "recipe": recipe_data})
 

@@ -1,0 +1,49 @@
+{
+  "categories": [
+    "Fruit and Veg",
+    "Fresh herbs",
+    "Dairy",
+    "Raw Meat",
+    "Staple foods",
+    "Miscellanous Cooking",
+    "Spices and Seasonings",
+    "Canned Goods"
+  ],
+  "products": [
+    {
+      "name": "Minced Beef",
+      "category": "Raw Meat"
+    },
+    {
+      "name": "Red Pepper",
+      "pluralised_name": "Red Peppers",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Milk",
+      "category": "Dairy"
+    }
+  ],
+  "recipes": [
+    {
+      "name": "Chilli Con Carne",
+      "source": "https://www.bbcgoodfood.com/recipes/chilli-con-carne-recipe",
+      "ingredients": [
+        {
+          "name": "Minced Beef",
+          "amount": "500g"
+        },
+        {
+          "name": "Red Pepper",
+          "amount": "1"
+        }
+      ]
+    }
+  ],
+  "checklist": [],
+  "shopping": [
+    {
+      "name": "Milk"
+    }
+  ]
+}
