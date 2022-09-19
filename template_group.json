@@ -1,15 +1,28 @@
 {
   "categories": [
     "Fruit and Veg",
-    "Fresh herbs",
+    "Fresh Herbs",
     "Dairy",
     "Raw Meat",
-    "Staple foods",
+    "Cooked Meat",
+    "Staple Foods",
     "Miscellanous Cooking",
-    "Spices and Seasonings",
-    "Canned Goods"
+    "Herbs, Spices, and Seasonings",
+    "Canned Goods",
+    "Frozen Foods",
+    "Household Essentials"
   ],
   "products": [
+    {
+      "name": "Apple",
+      "pluralised_name": "Apples",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Banana",
+      "pluralised_name": "Bananas",
+      "category": "Fruit and Veg"
+    },
     {
       "name": "Minced Beef",
       "category": "Raw Meat"
@@ -18,6 +31,319 @@
       "name": "Red Pepper",
       "pluralised_name": "Red Peppers",
       "category": "Fruit and Veg"
+    },
+    {
+      "name": "Onion",
+      "pluralised_name": "Onions",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Garlic",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Olive Oil",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Sunflower Oil",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Tin Foil",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Hot Chilli Powder",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Paprika",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Ground Cumin",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Ground Coriander",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Beef Stock Cube",
+      "pluralised_name": "Beef Stock Cubes",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Chicken Stock Cube",
+      "pluralised_name": "Chicken Stock Cubes",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Vegetable Stock Cube",
+      "pluralised_name": "Vegetable Stock Cubes",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Canned Chopped Tomatoes",
+      "category": "Canned Goods"
+    },
+    {
+      "name": "Sugar",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Marjoram",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Tomato Puree",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Canned Red Kidney Beans",
+      "category": "Canned Goods"
+    },
+    {
+      "name": "Long Grain Rice",
+      "category": "Staple Foods"
+    },
+    {
+      "name": "Carrot",
+      "pluralised_name": "Carrots",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Celery",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Plain Flour",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Red Wine",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Worcestershire Sauce",
+      "category": "Miscellanous Cooking"
+    },
+    {
+      "name": "Bay Leaf",
+      "pluralised_name": "Bay Leaves",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Potato",
+      "pluralised_name": "Potatoes",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Butter",
+      "category": "Dairy"
+    },
+    {
+      "name": "Cheddar Cheese",
+      "category": "Dairy"
+    },
+    {
+      "name": "Nutmeg",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Chicken Breast",
+      "pluralised_name": "Chicken Breasts",
+      "category": "Raw Meat"
+    },
+    {
+      "name": "Chorizo",
+      "category": "Cooked Meat"
+    },
+    {
+      "name": "Cajun Seasoning",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Canned Plum Tomatoes",
+      "category": "Canned Goods"
+    },
+    {
+      "name": "Toilet Paper",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Kitchen Towel",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Toothpaste",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Shampoo",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Shower Gel",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Boxed Tissues",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Salt",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Pepper",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Dishwashing Liquid",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Detergent",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Fabric Conditioner",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Risotto Rice",
+      "category": "Staple Foods"
+    },
+    {
+      "name": "Lemon",
+      "pluralised_name": "Lemons",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Courgette",
+      "pluralised_name": "Courgettes",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Parmesan Cheese",
+      "category": "Dairy"
+    },
+    {
+      "name": "Creme Fraiche",
+      "category": "Dairy"
+    },
+    {
+      "name": "Thyme",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Sausage",
+      "pluralised_name": "Sausages",
+      "category": "Raw Meat"
+    },
+    {
+      "name": "Red Wine Vinegar",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Soy Sauce",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Leek",
+      "pluralised_name": "Leeks",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Bacon Rasher",
+      "pluralised_name": "Bacon Rashers",
+      "category": "Raw Meat"
+    },
+    {
+      "name": "Streaky Bacon Rasher",
+      "pluralised_name": "Streaky Bacon Rashers",
+      "category": "Raw Meat"
+    },
+    {
+      "name": "Coffee",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Rump Steak",
+      "pluralised_name": "Rump Steaks",
+      "category": "Raw Meat"
+    },
+    {
+      "name": "Ribeye Steak",
+      "pluralised_name": "Ribeye Steaks",
+      "category": "Raw Meat"
+    },
+    {
+      "name": "Frozen Chips",
+      "category": "Frozen Foods"
+    },
+    {
+      "name": "Frozen Peas",
+      "category": "Frozen Foods"
+    },
+    {
+      "name": "Pet Food",
+      "category": "Household Essentials"
+    },
+    {
+      "name": "Tomato",
+      "pluralised_name": "Tomatoes",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Cucumber",
+      "pluralised_name": "Cucumbers",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Fresh Rosemary",
+      "category": "Fresh Herbs"
+    },
+    {
+      "name": "Fresh Basil",
+      "category": "Fresh Herbs"
+    },
+    {
+      "name": "Dried Oregano",
+      "category": "Herbs, Spices, and Seasonings"
+    },
+    {
+      "name": "Red Chilli",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Cherry Tomato",
+      "pluralised_name": "Cherry Tomatoes",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Plum Tomato",
+      "pluralised_name": "Plum Tomatoes",
+      "category": "Fruit and Veg"
+    },
+    {
+      "name": "Spaghetti",
+      "category": "Staple Foods"
+    },
+    {
+      "name": "Canned Mixed Beans",
+      "category": "Canned Goods"
+    },
+    {
+      "name": "Fresh Parsley",
+      "category": "Fresh Herbs"
+    },
+    {
+      "name": "Egg",
+      "pluralised_name": "Eggs",
+      "category": "Miscellanous Cooking"
     },
     {
       "name": "Milk",
@@ -36,11 +362,114 @@
         {
           "name": "Red Pepper",
           "amount": "1"
+        },
+        {
+          "name": "Onion",
+          "amount": "2"
+        },
+        {
+          "name": "Garlic",
+          "amount": "2 cloves"
+        },
+        {
+          "name": "Olive Oil",
+          "amount": "1 tbsp"
+        },
+        {
+          "name": "Hot Chilli Powder",
+          "amount": "1 tsp"
+        },
+        {
+          "name": "Paprika",
+          "amount": "1 tsp"
+        },
+        {
+          "name": "Ground Cumin",
+          "amount": "1 tsp"
+        },
+        {
+          "name": "Beef Stock Cube",
+          "amount": "1"
+        },
+        {
+          "name": "Canned Chopped Tomatoes",
+          "amount": "400g"
+        },
+        {
+          "name": "Marjoram",
+          "amount": "1/2 tsp"
+        },
+        {
+          "name": "Sugar",
+          "amount": "1 tsp"
+        },
+        {
+          "name": "Tomato Puree",
+          "amount": "2 tbsp"
+        },
+        {
+          "name": "Canned Red Kidney Beans",
+          "amount": "410g"
+        },
+        {
+          "name": "Long Grain Rice"
         }
       ]
     }
   ],
-  "checklist": [],
+  "checklist": [
+    {
+      "name": "Tin Foil"
+    },
+    {
+      "name": "Olive Oil"
+    },
+    {
+      "name": "Sugar"
+    },
+    {
+      "name": "Milk"
+    },
+    {
+      "name": "Toilet Paper"
+    },
+    {
+      "name": "Kitchen Towel"
+    },
+    {
+      "name": "Toothpaste"
+    },
+    {
+      "name": "Shampoo"
+    },
+    {
+      "name": "Shower Gel"
+    },
+    {
+      "name": "Salt"
+    },
+    {
+      "name": "Pepper"
+    },
+    {
+      "name": "Dishwashing Liquid"
+    },
+    {
+      "name": "Detergent"
+    },
+    {
+      "name": "Fabric Conditioner"
+    },
+    {
+      "name": "Boxed Tissues"
+    },
+    {
+      "name": "Coffee"
+    },
+    {
+      "name": "Pet Food"
+    }
+  ],
   "shopping": [
     {
       "name": "Milk"

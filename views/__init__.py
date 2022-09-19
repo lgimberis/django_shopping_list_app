@@ -88,7 +88,11 @@ class GroupViewSet(viewsets.ModelViewSet):
                         plural_name = (product["pluralised_name"] 
                                 if "pluralised_name" in product else product["name"])
                         if "category" in product:
-                            category = Category.objects.get(group=group, name__exact=product["category"])
+                            try:
+                                category = Category.objects.get(group=group, name__exact=product["category"])
+                            except Category.DoesNotExist as e:
+                                print(f"Category {product['category']} of product {product['name']} ({product}) does not exist")
+                                continue
                         else:
                             category = None
                         _product = Product(name=product["name"], pluralised_name=plural_name, 
@@ -97,10 +101,13 @@ class GroupViewSet(viewsets.ModelViewSet):
 
                 # Small helper function for ingredient addition
                 def _add_ingredient(ingredient, _recipe=None, on_list=False):
-                    _product = Product.objects.get(group=group, name__exact=ingredient["name"])
-                    amount = ingredient["amount"] if "amount" in ingredient else ""
-                    _ingredient = Ingredient(product=_product, recipe=_recipe, amount=amount, on_shopping_list=on_list)
-                    _ingredient.save()
+                    try:
+                        _product = Product.objects.get(group=group, name__exact=ingredient["name"])
+                        amount = ingredient["amount"] if "amount" in ingredient else ""
+                        _ingredient = Ingredient(product=_product, recipe=_recipe, amount=amount, on_shopping_list=on_list)
+                        _ingredient.save()
+                    except Product.DoesNotExist:
+                        print(f"Product {ingredient['name']} of ingredient {ingredient} does not exist")
 
                 # Add recipes
                 if "recipes" in template_data:
