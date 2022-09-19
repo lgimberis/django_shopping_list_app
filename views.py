@@ -1,14 +1,12 @@
-from turtle import update
 from django.contrib.auth.models import Group
 
 from rest_framework import viewsets, permissions, renderers
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import action
 
-from ..serializers import GroupSerializer, CategorySerializer, ProductSerializer, RecipeSerializer, IngredientSerializer, UserSerializer
-
-from ..models import Category, Ingredient, Recipe, Product
-from ..util import (
+from .serializers import GroupSerializer, CategorySerializer, ProductSerializer, RecipeSerializer, IngredientSerializer, UserSerializer
+from .models import Category, Ingredient, Recipe, Product
+from .util import (
     get_shopping_list_group, 
     generate_group_token, 
     test_group_token, 
