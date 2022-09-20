@@ -71,7 +71,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             # Load data files containing 'Template Group' data
             import json
             from pathlib import Path
-            with open(Path(__file__).parent.parent / 'template_group.json') as file:
+            with open(Path(__file__).parent / 'template_group.json') as file:
                 template_data = json.load(file)
 
                 # Add categories first
