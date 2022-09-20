@@ -173,7 +173,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             queryset = self.get_queryset().filter(name__iexact=request.query_params['name'])
             response = { "exists": queryset.count() == 1 }
             if response["exists"]:
-                response["data"] = ProductSerializer(queryset.all()[0], context={'request': request}).data
+                response["data"] = CategorySerializer(queryset.all()[0], context={'request': request}).data
             return Response(response)
 
     def perform_create(self, serializer):
