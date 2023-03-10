@@ -78,6 +78,7 @@ class Ingredient(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, blank=True, null=True)
     added_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+    added_time = models.DateTimeField(auto_now_add=True)
     on_shopping_list = models.BooleanField(default=False)
 
     amount = models.TextField(max_length=40, default="", blank=True, null=True)
